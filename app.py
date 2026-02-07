@@ -160,8 +160,39 @@ def simulate():
     )
     elapsed = time.time() - start_time
 
+    # Get updated standings with adjusted matches applied
+    current_standings = simulator.get_current_standings(adjusted_matches=adjusted_matches)
+
+    # Format updated teams data
+    teams_data = []
+    for team_name, match_record, map_record in current_standings:
+        # Get the team from base teams to access Elo
+        team = teams[team_name]
+
+        # Parse match record to get wins/losses
+        match_parts = match_record.split('-')
+        match_wins = int(match_parts[0])
+        match_losses = int(match_parts[1])
+
+        # Parse map record to get wins/losses
+        map_parts = map_record.split('-')
+        map_wins = int(map_parts[0])
+        map_losses = int(map_parts[1])
+
+        teams_data.append({
+            'name': team_name,
+            'match_wins': match_wins,
+            'match_losses': match_losses,
+            'map_wins': map_wins,
+            'map_losses': map_losses,
+            'match_record': match_record,
+            'map_record': map_record,
+            'elo_rating': team.elo_rating
+        })
+
     return jsonify({
         'probabilities': probabilities,
+        'teams': teams_data,
         'simulation_time': round(elapsed, 3),
         'iterations': Config.NUM_SIMULATIONS
     })
@@ -173,13 +204,42 @@ def reset():
     Reset to baseline probabilities (no user adjustments).
 
     Returns:
-        JSON with success status
+        JSON with success status, baseline probabilities, and original standings
     """
-    # Just return the baseline probabilities
+    # Get original standings (no adjustments)
+    current_standings = simulator.get_current_standings()
+
+    # Format teams data
+    teams_data = []
+    for team_name, match_record, map_record in current_standings:
+        team = teams[team_name]
+
+        # Parse match record
+        match_parts = match_record.split('-')
+        match_wins = int(match_parts[0])
+        match_losses = int(match_parts[1])
+
+        # Parse map record
+        map_parts = map_record.split('-')
+        map_wins = int(map_parts[0])
+        map_losses = int(map_parts[1])
+
+        teams_data.append({
+            'name': team_name,
+            'match_wins': match_wins,
+            'match_losses': match_losses,
+            'map_wins': map_wins,
+            'map_losses': map_losses,
+            'match_record': match_record,
+            'map_record': map_record,
+            'elo_rating': team.elo_rating
+        })
+
     return jsonify({
         'status': 'success',
         'message': 'Reset to baseline probabilities',
-        'probabilities': baseline_probabilities
+        'probabilities': baseline_probabilities,
+        'teams': teams_data
     })
 
 

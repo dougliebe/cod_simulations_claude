@@ -231,16 +231,28 @@ class SeasonSimulator:
 
         return probabilities
 
-    def get_current_standings(self) -> List[tuple[str, str, str]]:
+    def get_current_standings(
+        self,
+        adjusted_matches: Optional[List[Match]] = None
+    ) -> List[tuple[str, str, str]]:
         """
-        Get current standings based on completed matches only.
+        Get current standings based on completed matches and optional adjustments.
+
+        Args:
+            adjusted_matches: Optional list of user-adjusted match results
 
         Returns:
             List of tuples (team_name, match_record, map_record) ordered by seeding
         """
-        # Create standings with only completed matches
+        # Create standings with completed matches
         sim_teams = self._create_fresh_teams()
-        standings = SeasonStandings(sim_teams, self.base_matches)
+        sim_matches = copy.deepcopy(self.base_matches)
+
+        # Apply user adjustments if provided
+        if adjusted_matches:
+            sim_matches = self._apply_user_adjustments(sim_matches, adjusted_matches)
+
+        standings = SeasonStandings(sim_teams, sim_matches)
         standings.update_team_records_from_matches()
 
         # Calculate seeding

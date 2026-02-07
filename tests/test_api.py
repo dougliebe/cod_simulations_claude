@@ -83,11 +83,31 @@ class TestAPIEndpoints:
 
         # Check response structure
         assert 'probabilities' in data
+        assert 'teams' in data
         assert 'simulation_time' in data
         assert 'iterations' in data
 
         # Check probabilities
         assert len(data['probabilities']) == 12
+
+        # Check teams data includes updated standings
+        assert len(data['teams']) == 12
+        team = data['teams'][0]
+        assert 'name' in team
+        assert 'match_wins' in team
+        assert 'match_losses' in team
+        assert 'map_wins' in team
+        assert 'map_losses' in team
+        assert 'match_record' in team
+        assert 'map_record' in team
+        assert 'elo_rating' in team
+
+        # Verify that adjusted match affected the standings
+        # Cloud9 should have at least 1 match win and 3 map wins
+        c9_team = next((t for t in data['teams'] if t['name'] == 'Cloud9 New York'), None)
+        assert c9_team is not None
+        assert c9_team['match_wins'] >= 1
+        assert c9_team['map_wins'] >= 3
 
         # Check simulation metadata
         assert isinstance(data['simulation_time'], (int, float))
@@ -170,7 +190,17 @@ class TestAPIEndpoints:
 
         assert data['status'] == 'success'
         assert 'probabilities' in data
+        assert 'teams' in data
         assert len(data['probabilities']) == 12
+        assert len(data['teams']) == 12
+
+        # Verify teams data structure
+        team = data['teams'][0]
+        assert 'name' in team
+        assert 'match_wins' in team
+        assert 'match_losses' in team
+        assert 'match_record' in team
+        assert 'map_record' in team
 
     def test_get_match_details_valid(self, client):
         """Test GET /api/match-details with valid match ID."""
