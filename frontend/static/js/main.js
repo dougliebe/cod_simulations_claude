@@ -164,9 +164,9 @@ class App {
             // Call reset API
             const result = await SimulationAPI.reset();
 
-            // Update table to baseline with teams data
+            // Reset table to baseline sorted by current standing
             if (result.teams) {
-                this.table.updateTableWithTeams(result.teams, result.probabilities);
+                this.table.resetTableWithTeams(result.teams, result.probabilities);
             } else {
                 // Fallback to old method if teams data not available
                 this.table.updateTable(result.probabilities);

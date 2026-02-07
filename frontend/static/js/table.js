@@ -68,13 +68,51 @@ class ProbabilityTable {
     }
 
     /**
+     * Sort teams by bracket probability (top 6 %)
+     * @param {Array} teams - Array of team objects
+     * @param {Object} probabilities - Probability data for each team
+     * @returns {Array} Sorted teams
+     */
+    sortTeamsByBracketProb(teams, probabilities) {
+        return teams.sort((a, b) => {
+            // Sort by bracket probability (make_bracket)
+            const aProbBracket = probabilities[a.name]?.make_bracket || 0;
+            const bProbBracket = probabilities[b.name]?.make_bracket || 0;
+
+            if (aProbBracket !== bProbBracket) {
+                return bProbBracket - aProbBracket;
+            }
+
+            // If tied on bracket prob, sort by play-in probability
+            const aProbPlayIn = probabilities[a.name]?.make_play_ins || 0;
+            const bProbPlayIn = probabilities[b.name]?.make_play_ins || 0;
+
+            if (aProbPlayIn !== bProbPlayIn) {
+                return bProbPlayIn - aProbPlayIn;
+            }
+
+            // If still tied, sort by current match record
+            const aMatchWinPct = a.match_wins / (a.match_wins + a.match_losses) || 0;
+            const bMatchWinPct = b.match_wins / (b.match_wins + b.match_losses) || 0;
+
+            return bMatchWinPct - aMatchWinPct;
+        });
+    }
+
+    /**
      * Render the full probability table
      * @param {Array} teams - Array of team objects
      * @param {Object} probabilities - Probability data for each team
+     * @param {string} sortMode - Sort mode: 'standing' or 'bracket' (default: 'standing')
      */
-    renderTable(teams, probabilities) {
-        // Sort teams by current standing
-        const sortedTeams = this.sortTeamsByStanding([...teams], probabilities);
+    renderTable(teams, probabilities, sortMode = 'standing') {
+        // Sort teams based on mode
+        let sortedTeams;
+        if (sortMode === 'bracket') {
+            sortedTeams = this.sortTeamsByBracketProb([...teams], probabilities);
+        } else {
+            sortedTeams = this.sortTeamsByStanding([...teams], probabilities);
+        }
 
         // Clear existing rows
         this.tableBody.innerHTML = '';
@@ -183,53 +221,24 @@ class ProbabilityTable {
 
     /**
      * Update team records (match and map records) and probabilities
+     * Re-renders the entire table sorted by bracket probability
      * @param {Array} teams - Array of team objects with updated records
      * @param {Object} probabilities - Updated probability data
      */
     updateTableWithTeams(teams, probabilities) {
-        // Create a map for quick lookup
-        const teamMap = {};
-        teams.forEach(team => {
-            teamMap[team.name] = team;
-        });
+        // Re-render entire table sorted by bracket probability
+        this.renderTable(teams, probabilities, 'bracket');
+    }
 
-        const rows = this.tableBody.querySelectorAll('tr');
-
-        rows.forEach((row) => {
-            const teamName = row.querySelector('.team-name-cell').textContent;
-            const team = teamMap[teamName];
-            const probs = probabilities[teamName];
-
-            if (!team || !probs) return;
-
-            // Update match record (column 3)
-            const matchRecordCell = row.cells[2];
-            matchRecordCell.textContent = team.match_record || `${team.match_wins}-${team.match_losses}`;
-
-            // Update map record (column 4)
-            const mapRecordCell = row.cells[3];
-            mapRecordCell.textContent = team.map_record || `${team.map_wins}-${team.map_losses}`;
-
-            // Update play-in probability (column 5)
-            const playInCell = row.cells[4];
-            const playInProb = probs.make_play_ins || 0;
-            playInCell.textContent = this.formatProbability(playInProb);
-            playInCell.className = this.getProbabilityClass(playInProb);
-
-            // Update bracket probability (column 6)
-            const bracketCell = row.cells[5];
-            const bracketProb = probs.make_bracket || 0;
-            bracketCell.textContent = this.formatProbability(bracketProb);
-            bracketCell.className = this.getProbabilityClass(bracketProb);
-
-            // Update seed probabilities (columns 7-18)
-            for (let seed = 1; seed <= 12; seed++) {
-                const seedProb = probs[`seed_${seed}`] || 0;
-                const seedCell = row.cells[6 + seed - 1];
-                seedCell.textContent = this.formatProbability(seedProb);
-                seedCell.className = this.getProbabilityClass(seedProb);
-            }
-        });
+    /**
+     * Reset table to baseline with teams data
+     * Re-renders the entire table sorted by current standing
+     * @param {Array} teams - Array of team objects
+     * @param {Object} probabilities - Baseline probability data
+     */
+    resetTableWithTeams(teams, probabilities) {
+        // Re-render entire table sorted by current standing
+        this.renderTable(teams, probabilities, 'standing');
     }
 
     /**
