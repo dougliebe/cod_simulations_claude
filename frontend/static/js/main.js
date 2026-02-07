@@ -117,8 +117,13 @@ class App {
             // Call API
             const result = await SimulationAPI.simulate(adjustedMatches);
 
-            // Update probability table
-            this.table.updateTable(result.probabilities);
+            // Update table with teams data and probabilities
+            if (result.teams) {
+                this.table.updateTableWithTeams(result.teams, result.probabilities);
+            } else {
+                // Fallback to old method if teams data not available
+                this.table.updateTable(result.probabilities);
+            }
             this.state.currentProbabilities = result.probabilities;
 
             // Show simulation info
@@ -159,8 +164,13 @@ class App {
             // Call reset API
             const result = await SimulationAPI.reset();
 
-            // Update table to baseline
-            this.table.updateTable(result.probabilities);
+            // Update table to baseline with teams data
+            if (result.teams) {
+                this.table.updateTableWithTeams(result.teams, result.probabilities);
+            } else {
+                // Fallback to old method if teams data not available
+                this.table.updateTable(result.probabilities);
+            }
             this.state.currentProbabilities = result.probabilities;
 
             console.log('Reset to baseline probabilities');

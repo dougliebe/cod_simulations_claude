@@ -182,6 +182,57 @@ class ProbabilityTable {
     }
 
     /**
+     * Update team records (match and map records) and probabilities
+     * @param {Array} teams - Array of team objects with updated records
+     * @param {Object} probabilities - Updated probability data
+     */
+    updateTableWithTeams(teams, probabilities) {
+        // Create a map for quick lookup
+        const teamMap = {};
+        teams.forEach(team => {
+            teamMap[team.name] = team;
+        });
+
+        const rows = this.tableBody.querySelectorAll('tr');
+
+        rows.forEach((row) => {
+            const teamName = row.querySelector('.team-name-cell').textContent;
+            const team = teamMap[teamName];
+            const probs = probabilities[teamName];
+
+            if (!team || !probs) return;
+
+            // Update match record (column 3)
+            const matchRecordCell = row.cells[2];
+            matchRecordCell.textContent = team.match_record || `${team.match_wins}-${team.match_losses}`;
+
+            // Update map record (column 4)
+            const mapRecordCell = row.cells[3];
+            mapRecordCell.textContent = team.map_record || `${team.map_wins}-${team.map_losses}`;
+
+            // Update playoff probability (column 5)
+            const playoffCell = row.cells[4];
+            const playoffProb = probs.make_playoffs || 0;
+            playoffCell.textContent = this.formatProbability(playoffProb);
+            playoffCell.className = this.getProbabilityClass(playoffProb);
+
+            // Update top 6 probability (column 6)
+            const top6Cell = row.cells[5];
+            const top6Prob = probs.winners_bracket || 0;
+            top6Cell.textContent = this.formatProbability(top6Prob);
+            top6Cell.className = this.getProbabilityClass(top6Prob);
+
+            // Update seed probabilities (columns 7-18)
+            for (let seed = 1; seed <= 12; seed++) {
+                const seedProb = probs[`seed_${seed}`] || 0;
+                const seedCell = row.cells[6 + seed - 1];
+                seedCell.textContent = this.formatProbability(seedProb);
+                seedCell.className = this.getProbabilityClass(seedProb);
+            }
+        });
+    }
+
+    /**
      * Show or hide loading indicator
      * @param {boolean} show - Whether to show loading indicator
      */
