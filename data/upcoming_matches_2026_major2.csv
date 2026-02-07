@@ -1,0 +1,67 @@
+start_date,team1_id,team2_id,team1_score,team2_score
+2026-03-08T00:30:00+00:00,Cloud9 New York,Boston Breach,NA,NA
+2026-03-08T19:00:00+00:00,Miami Heretics,Los Angeles Thieves,NA,NA
+2026-03-08T20:30:00+00:00,Toronto KOI,Boston Breach,NA,NA
+2026-03-08T22:00:00+00:00,OpTic Texas,Carolina Royal Ravens,NA,NA
+2026-03-08T23:30:00+00:00,Vancouver Surge,Paris Gentle Mates,NA,NA
+2026-03-13T19:00:00+00:00,Toronto KOI,Cloud9 New York,NA,NA
+2026-03-13T20:30:00+00:00,Riyadh Falcons,Miami Heretics,NA,NA
+2026-03-13T22:00:00+00:00,Paris Gentle Mates,OpTic Texas,NA,NA
+2026-03-14T19:00:00+00:00,G2 Minnesota,Carolina Royal Ravens,NA,NA
+2026-03-14T20:30:00+00:00,Vancouver Surge,Toronto KOI,NA,NA
+2026-03-14T22:00:00+00:00,Los Angeles Thieves,Cloud9 New York,NA,NA
+2026-03-14T23:30:00+00:00,Paris Gentle Mates,Boston Breach,NA,NA
+2026-03-15T19:00:00+00:00,G2 Minnesota,Boston Breach,NA,NA
+2026-02-13T20:00:00+00:00,OpTic Texas,Boston Breach,NA,NA
+2026-03-15T20:30:00+00:00,Vancouver Surge,Miami Heretics,NA,NA
+2026-02-13T21:30:00+00:00,Toronto KOI,Carolina Royal Ravens,NA,NA
+2026-03-15T22:00:00+00:00,Riyadh Falcons,Los Angeles Thieves,NA,NA
+2026-02-13T23:00:00+00:00,Miami Heretics,FaZe Vegas,NA,NA
+2026-03-15T23:30:00+00:00,FaZe Vegas,Carolina Royal Ravens,NA,NA
+2026-03-20T19:00:00+00:00,Paris Gentle Mates,FaZe Vegas,NA,NA
+2026-02-14T20:00:00+00:00,Riyadh Falcons,Paris Gentle Mates,NA,NA
+2026-02-14T21:30:00+00:00,OpTic Texas,G2 Minnesota,NA,NA
+2026-03-20T20:30:00+00:00,Cloud9 New York,Carolina Royal Ravens,NA,NA
+2026-02-14T23:00:00+00:00,Toronto KOI,FaZe Vegas,NA,NA
+2026-03-20T22:00:00+00:00,Vancouver Surge,G2 Minnesota,NA,NA
+2026-02-15T00:30:00+00:00,Vancouver Surge,Los Angeles Thieves,NA,NA
+2026-03-21T19:00:00+00:00,Miami Heretics,Carolina Royal Ravens,NA,NA
+2026-03-21T20:30:00+00:00,FaZe Vegas,Cloud9 New York,NA,NA
+2026-02-15T20:00:00+00:00,Paris Gentle Mates,Miami Heretics,NA,NA
+2026-02-15T21:30:00+00:00,Riyadh Falcons,Boston Breach,NA,NA
+2026-03-21T22:00:00+00:00,Riyadh Falcons,OpTic Texas,NA,NA
+2026-02-15T23:00:00+00:00,Los Angeles Thieves,Carolina Royal Ravens,NA,NA
+2026-03-21T23:30:00+00:00,Los Angeles Thieves,G2 Minnesota,NA,NA
+2026-02-16T00:30:00+00:00,G2 Minnesota,Cloud9 New York,NA,NA
+2026-03-22T19:00:00+00:00,Vancouver Surge,Riyadh Falcons,NA,NA
+2026-02-20T20:00:00+00:00,Vancouver Surge,FaZe Vegas,NA,NA
+2026-03-22T20:30:00+00:00,Paris Gentle Mates,Los Angeles Thieves,NA,NA
+2026-02-20T21:30:00+00:00,Riyadh Falcons,Cloud9 New York,NA,NA
+2026-03-22T22:00:00+00:00,Miami Heretics,Boston Breach,NA,NA
+2026-02-20T23:00:00+00:00,Toronto KOI,Los Angeles Thieves,NA,NA
+2026-03-22T23:30:00+00:00,Toronto KOI,OpTic Texas,NA,NA
+2026-02-21T20:00:00+00:00,Toronto KOI,G2 Minnesota,NA,NA
+2026-02-21T21:30:00+00:00,Los Angeles Thieves,Boston Breach,NA,NA
+2026-02-21T23:00:00+00:00,Paris Gentle Mates,Carolina Royal Ravens,NA,NA
+2026-02-22T00:30:00+00:00,OpTic Texas,Miami Heretics,NA,NA
+2026-02-22T20:00:00+00:00,Riyadh Falcons,Carolina Royal Ravens,NA,NA
+2026-02-22T21:30:00+00:00,Vancouver Surge,Boston Breach,NA,NA
+2026-02-22T23:00:00+00:00,OpTic Texas,Cloud9 New York,NA,NA
+2026-02-23T00:30:00+00:00,G2 Minnesota,FaZe Vegas,NA,NA
+2026-02-27T20:00:00+00:00,Carolina Royal Ravens,Boston Breach,NA,NA
+2026-02-27T21:30:00+00:00,Riyadh Falcons,FaZe Vegas,NA,NA
+2026-02-27T23:00:00+00:00,Paris Gentle Mates,Cloud9 New York,NA,NA
+2026-02-28T20:00:00+00:00,Riyadh Falcons,G2 Minnesota,NA,NA
+2026-02-28T21:30:00+00:00,Toronto KOI,Miami Heretics,NA,NA
+2026-02-28T23:00:00+00:00,Vancouver Surge,Carolina Royal Ravens,NA,NA
+2026-03-01T00:30:00+00:00,OpTic Texas,Los Angeles Thieves,NA,NA
+2026-03-01T20:00:00+00:00,Toronto KOI,Paris Gentle Mates,NA,NA
+2026-03-01T21:30:00+00:00,FaZe Vegas,Boston Breach,NA,NA
+2026-03-01T23:00:00+00:00,Miami Heretics,Cloud9 New York,NA,NA
+2026-03-02T00:30:00+00:00,Vancouver Surge,OpTic Texas,NA,NA
+2026-03-06T20:00:00+00:00,Vancouver Surge,Cloud9 New York,NA,NA
+2026-03-06T21:30:00+00:00,Los Angeles Thieves,FaZe Vegas,NA,NA
+2026-03-06T23:00:00+00:00,Miami Heretics,G2 Minnesota,NA,NA
+2026-03-07T20:00:00+00:00,Paris Gentle Mates,G2 Minnesota,NA,NA
+2026-03-07T21:30:00+00:00,OpTic Texas,FaZe Vegas,NA,NA
+2026-03-07T23:00:00+00:00,Toronto KOI,Riyadh Falcons,NA,NA
