@@ -1,0 +1,457 @@
+/**
+ * CoD Seeding Simulator - Styles
+ */
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #e4e4e4;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+/* Typography */
+h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #ffffff;
+}
+
+/* Sections */
+section {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#probability-section {
+    margin-bottom: 40px;
+}
+
+/* Loading Indicator */
+#loading-indicator {
+    text-align: center;
+    padding: 20px;
+    font-size: 1.2rem;
+}
+
+#loading-indicator .spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(79, 172, 254, 0.3);
+    border-top-color: #4facfe;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Probability Table */
+#table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+#probability-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.9rem;
+}
+
+#probability-table thead {
+    background: linear-gradient(135deg, #2d3561 0%, #1f2544 100%);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#probability-table th {
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    color: #ffffff;
+    border-bottom: 2px solid rgba(79, 172, 254, 0.3);
+    white-space: nowrap;
+}
+
+#probability-table td {
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#probability-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+#probability-table tbody tr:hover {
+    background-color: rgba(79, 172, 254, 0.1);
+}
+
+/* Rank Cell */
+.rank-cell {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* Team Name Cell */
+.team-name-cell {
+    text-align: left !important;
+    font-weight: 600;
+    padding-left: 15px !important;
+}
+
+/* Bracket Classes */
+.winners-bracket {
+    background-color: rgba(52, 152, 219, 0.15);
+    border-left: 4px solid #3498db;
+}
+
+.play-in {
+    background-color: rgba(241, 196, 15, 0.1);
+    border-left: 4px solid #f1c40f;
+}
+
+.eliminated {
+    background-color: rgba(231, 76, 60, 0.1);
+    border-left: 4px solid #e74c3c;
+}
+
+/* Probability Color Coding */
+.prob-high {
+    color: #2ecc71;
+    font-weight: 600;
+}
+
+.prob-medium {
+    color: #f39c12;
+    font-weight: 500;
+}
+
+.prob-low {
+    color: #95a5a6;
+}
+
+.prob-very-low {
+    color: #5a6470;
+    font-size: 0.85rem;
+}
+
+/* Simulation Info */
+#simulation-info {
+    text-align: center;
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(52, 152, 219, 0.1);
+    border-radius: 6px;
+    color: #4facfe;
+    font-size: 0.9rem;
+}
+
+/* Games Section */
+.instructions {
+    color: #b0b0b0;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#games-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+/* Game Box */
+.game-box {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+}
+
+.game-box:hover {
+    border-color: rgba(79, 172, 254, 0.4);
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.2);
+}
+
+.game-box.adjusted {
+    border-color: #4facfe;
+    background: rgba(79, 172, 254, 0.08);
+}
+
+.game-box.invalid {
+    border-color: #e74c3c;
+    background: rgba(231, 76, 60, 0.1);
+    animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Match Header */
+.match-header {
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.match-date {
+    font-size: 0.8rem;
+    color: #95a5a6;
+    font-weight: 500;
+}
+
+/* Match Teams */
+.match-teams {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.team {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+.team-name {
+    font-weight: 500;
+    flex: 1;
+    font-size: 0.95rem;
+}
+
+.vs {
+    text-align: center;
+    color: #7f8c8d;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin: 4px 0;
+}
+
+/* Score Input */
+.score-input {
+    width: 50px;
+    padding: 6px;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.score-input:focus {
+    outline: none;
+    border-color: #4facfe;
+    background: rgba(79, 172, 254, 0.15);
+}
+
+.score-input::placeholder {
+    color: #5a6470;
+}
+
+/* Remove spinner arrows from number input */
+.score-input::-webkit-inner-spin-button,
+.score-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.score-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Match Footer */
+.match-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.win-prob {
+    font-size: 0.8rem;
+    color: #95a5a6;
+}
+
+.clear-btn {
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clear-btn:hover {
+    background: rgba(231, 76, 60, 0.3);
+    border-color: #e74c3c;
+}
+
+/* Submit Section */
+#submit-section {
+    text-align: center;
+    margin-top: 30px;
+}
+
+/* Buttons */
+.btn {
+    padding: 14px 32px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: #1a1a2e;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: rgba(149, 165, 166, 0.3);
+    color: #ecf0f1;
+    border: 1px solid rgba(149, 165, 166, 0.5);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: rgba(149, 165, 166, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Error Message */
+.error {
+    background: rgba(231, 76, 60, 0.2);
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    section {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    h2 {
+        font-size: 1.4rem;
+    }
+
+    #games-container {
+        grid-template-columns: 1fr;
+    }
+
+    #probability-table {
+        font-size: 0.75rem;
+    }
+
+    #probability-table th,
+    #probability-table td {
+        padding: 8px 4px;
+    }
+
+    .btn {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+    }
+}
+
+/* Dark scrollbar */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(79, 172, 254, 0.3);
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(79, 172, 254, 0.5);
+}

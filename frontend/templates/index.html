@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoD Seeding Simulator - Major 2 2026</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- TOP SECTION: Probability Table -->
+        <section id="probability-section">
+            <h1>Call of Duty - Major 2 2026</h1>
+            <h2>Playoff & Seeding Probabilities</h2>
+
+            <div id="loading-indicator" class="hidden">
+                <div class="spinner"></div>
+                <span>Simulating scenarios...</span>
+            </div>
+
+            <div id="table-container">
+                <table id="probability-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Team</th>
+                            <th>Match Record</th>
+                            <th>Map Record</th>
+                            <th>Playoff %</th>
+                            <th>Top 6 %</th>
+                            <th>Seed 1</th>
+                            <th>Seed 2</th>
+                            <th>Seed 3</th>
+                            <th>Seed 4</th>
+                            <th>Seed 5</th>
+                            <th>Seed 6</th>
+                            <th>Seed 7</th>
+                            <th>Seed 8</th>
+                            <th>Seed 9</th>
+                            <th>Seed 10</th>
+                            <th>Seed 11</th>
+                            <th>Seed 12</th>
+                        </tr>
+                    </thead>
+                    <tbody id="probability-table-body">
+                        <!-- Table rows will be rendered by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="simulation-info" class="hidden">
+                <p>Simulation completed in <span id="sim-time">0.0</span>s (<span id="sim-iterations">0</span> iterations)</p>
+            </div>
+        </section>
+
+        <!-- BOTTOM SECTION: Upcoming Games -->
+        <section id="games-section">
+            <h2>Upcoming Matches - Set Scores & Simulate</h2>
+            <p class="instructions">Adjust match scores below (0-3 for best-of-5) and click Simulate to see updated probabilities.</p>
+
+            <div id="games-container">
+                <!-- Game boxes will be rendered by JavaScript -->
+            </div>
+
+            <div id="submit-section">
+                <button id="submit-btn" class="btn btn-primary">Simulate with Adjusted Scores</button>
+                <button id="reset-btn" class="btn btn-secondary">Reset All</button>
+            </div>
+
+            <div id="error-message" class="hidden error">
+                <!-- Error messages will be displayed here -->
+            </div>
+        </section>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/table.js"></script>
+    <script src="/static/js/gameBoxes.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
