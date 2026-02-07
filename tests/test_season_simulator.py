@@ -121,23 +121,23 @@ class TestSeasonSimulator:
         assert results['Team Strong']['seed_2'] == 1.0
 
     def test_playoff_probability_tracked(self, simple_simulator):
-        """Should track playoff qualification (top 8)."""
+        """Should track play-in qualification (top 10)."""
         results = simple_simulator.run_simulations(num_iterations=100)
 
         for team_name, probs in results.items():
-            # For 4-team league, all make "playoffs" (top 8)
+            # For 4-team league, all make "play-ins" (top 10)
             # Just verify the key exists
-            if 'make_playoffs' in probs:
-                assert 0.0 <= probs['make_playoffs'] <= 1.0
+            if 'make_play_ins' in probs:
+                assert 0.0 <= probs['make_play_ins'] <= 1.0
 
     def test_winners_bracket_probability_tracked(self, simple_simulator):
-        """Should track winners bracket (top 6)."""
+        """Should track bracket qualification (top 6)."""
         results = simple_simulator.run_simulations(num_iterations=100)
 
         for team_name, probs in results.items():
             # Just verify the key exists if present
-            if 'winners_bracket' in probs:
-                assert 0.0 <= probs['winners_bracket'] <= 1.0
+            if 'make_bracket' in probs:
+                assert 0.0 <= probs['make_bracket'] <= 1.0
 
     def test_get_current_standings(self, simple_simulator):
         """Should get current standings from completed matches."""

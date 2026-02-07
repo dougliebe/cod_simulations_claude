@@ -139,16 +139,19 @@ section {
 
 /* Bracket Classes */
 .winners-bracket {
+    /* Top 6 - Direct to Bracket (Blue) */
     background-color: rgba(52, 152, 219, 0.15);
     border-left: 4px solid #3498db;
 }
 
 .play-in {
+    /* Seeds 7-10 - Play-ins (Yellow) */
     background-color: rgba(241, 196, 15, 0.1);
     border-left: 4px solid #f1c40f;
 }
 
 .eliminated {
+    /* Seeds 11-12 - Eliminated (Red) */
     background-color: rgba(231, 76, 60, 0.1);
     border-left: 4px solid #e74c3c;
 }

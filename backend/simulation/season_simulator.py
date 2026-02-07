@@ -96,13 +96,13 @@ class SeasonSimulator:
             for seed, team_name in enumerate(final_seeding, 1):
                 results[team_name][f"seed_{seed}"] += 1
 
-                # Track playoff qualification (top 8)
-                if seed <= 8:
-                    results[team_name]["make_playoffs"] += 1
+                # Track play-in qualification (top 10)
+                if seed <= 10:
+                    results[team_name]["make_play_ins"] += 1
 
-                # Track winners bracket (top 6)
+                # Track bracket qualification (top 6)
                 if seed <= 6:
-                    results[team_name]["winners_bracket"] += 1
+                    results[team_name]["make_bracket"] += 1
 
         # Convert counts to probabilities
         return self._calculate_probabilities(results, num_iterations)

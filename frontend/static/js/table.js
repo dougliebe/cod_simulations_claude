@@ -38,9 +38,9 @@ class ProbabilityTable {
      * @returns {string} CSS class name
      */
     getRankClass(rank) {
-        if (rank <= 6) return 'winners-bracket'; // Top 6
-        if (rank <= 8) return 'play-in';         // 7-8
-        return 'eliminated';                      // 9-12
+        if (rank <= 6) return 'winners-bracket'; // Top 6 - Bracket
+        if (rank <= 10) return 'play-in';        // 7-10 - Play-ins
+        return 'eliminated';                      // 11-12 - Eliminated
     }
 
     /**
@@ -120,19 +120,19 @@ class ProbabilityTable {
         mapRecordCell.textContent = team.map_record || `${team.map_wins}-${team.map_losses}`;
         row.appendChild(mapRecordCell);
 
-        // Playoff probability (top 8)
-        const playoffProb = probs.make_playoffs || 0;
-        const playoffCell = document.createElement('td');
-        playoffCell.textContent = this.formatProbability(playoffProb);
-        playoffCell.className = this.getProbabilityClass(playoffProb);
-        row.appendChild(playoffCell);
+        // Play-in probability (top 10)
+        const playInProb = probs.make_play_ins || 0;
+        const playInCell = document.createElement('td');
+        playInCell.textContent = this.formatProbability(playInProb);
+        playInCell.className = this.getProbabilityClass(playInProb);
+        row.appendChild(playInCell);
 
-        // Top 6 probability (winners bracket)
-        const top6Prob = probs.winners_bracket || 0;
-        const top6Cell = document.createElement('td');
-        top6Cell.textContent = this.formatProbability(top6Prob);
-        top6Cell.className = this.getProbabilityClass(top6Prob);
-        row.appendChild(top6Cell);
+        // Bracket probability (top 6)
+        const bracketProb = probs.make_bracket || 0;
+        const bracketCell = document.createElement('td');
+        bracketCell.textContent = this.formatProbability(bracketProb);
+        bracketCell.className = this.getProbabilityClass(bracketProb);
+        row.appendChild(bracketCell);
 
         // Individual seed probabilities (1-12)
         for (let seed = 1; seed <= 12; seed++) {
@@ -159,17 +159,17 @@ class ProbabilityTable {
 
             if (!probs) return;
 
-            // Update playoff probability (column 5)
-            const playoffCell = row.cells[4];
-            const playoffProb = probs.make_playoffs || 0;
-            playoffCell.textContent = this.formatProbability(playoffProb);
-            playoffCell.className = this.getProbabilityClass(playoffProb);
+            // Update play-in probability (column 5)
+            const playInCell = row.cells[4];
+            const playInProb = probs.make_play_ins || 0;
+            playInCell.textContent = this.formatProbability(playInProb);
+            playInCell.className = this.getProbabilityClass(playInProb);
 
-            // Update top 6 probability (column 6)
-            const top6Cell = row.cells[5];
-            const top6Prob = probs.winners_bracket || 0;
-            top6Cell.textContent = this.formatProbability(top6Prob);
-            top6Cell.className = this.getProbabilityClass(top6Prob);
+            // Update bracket probability (column 6)
+            const bracketCell = row.cells[5];
+            const bracketProb = probs.make_bracket || 0;
+            bracketCell.textContent = this.formatProbability(bracketProb);
+            bracketCell.className = this.getProbabilityClass(bracketProb);
 
             // Update seed probabilities (columns 7-18)
             for (let seed = 1; seed <= 12; seed++) {
@@ -210,17 +210,17 @@ class ProbabilityTable {
             const mapRecordCell = row.cells[3];
             mapRecordCell.textContent = team.map_record || `${team.map_wins}-${team.map_losses}`;
 
-            // Update playoff probability (column 5)
-            const playoffCell = row.cells[4];
-            const playoffProb = probs.make_playoffs || 0;
-            playoffCell.textContent = this.formatProbability(playoffProb);
-            playoffCell.className = this.getProbabilityClass(playoffProb);
+            // Update play-in probability (column 5)
+            const playInCell = row.cells[4];
+            const playInProb = probs.make_play_ins || 0;
+            playInCell.textContent = this.formatProbability(playInProb);
+            playInCell.className = this.getProbabilityClass(playInProb);
 
-            // Update top 6 probability (column 6)
-            const top6Cell = row.cells[5];
-            const top6Prob = probs.winners_bracket || 0;
-            top6Cell.textContent = this.formatProbability(top6Prob);
-            top6Cell.className = this.getProbabilityClass(top6Prob);
+            // Update bracket probability (column 6)
+            const bracketCell = row.cells[5];
+            const bracketProb = probs.make_bracket || 0;
+            bracketCell.textContent = this.formatProbability(bracketProb);
+            bracketCell.className = this.getProbabilityClass(bracketProb);
 
             // Update seed probabilities (columns 7-18)
             for (let seed = 1; seed <= 12; seed++) {

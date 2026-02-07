@@ -13,8 +13,8 @@ class Config:
     TOTAL_MATCHES = 66
     NUM_SIMULATIONS = 1000
     BEST_OF = 5  # Best-of-5 series
-    PLAYOFF_TEAMS = 8  # Top 8 make playoffs
-    WINNERS_BRACKET_TEAMS = 6  # Top 6 go to winners bracket
+    PLAY_IN_TEAMS = 10  # Top 10 make play-ins
+    BRACKET_TEAMS = 6  # Top 6 go directly to bracket
 
     # Elo settings
     ELO_K_FACTOR = 20.0
