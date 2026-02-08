@@ -38,6 +38,11 @@ class App {
             // Render game boxes
             this.gameBoxes.renderGameBoxes(data.upcoming_matches);
 
+            // Show simulation info for initial load
+            if (data.simulation_time !== undefined && data.num_simulations) {
+                this.table.showSimulationInfo(data.simulation_time, data.num_simulations);
+            }
+
             // Attach event listeners
             this.attachEventListeners();
 

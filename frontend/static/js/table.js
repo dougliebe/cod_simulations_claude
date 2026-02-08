@@ -265,13 +265,8 @@ class ProbabilityTable {
         const simIterations = document.getElementById('sim-iterations');
 
         simTime.textContent = simulationTime.toFixed(3);
-        simIterations.textContent = iterations;
+        simIterations.textContent = iterations.toLocaleString();
 
         simInfo.classList.remove('hidden');
-
-        // Hide after 5 seconds
-        setTimeout(() => {
-            simInfo.classList.add('hidden');
-        }, 5000);
     }
 }

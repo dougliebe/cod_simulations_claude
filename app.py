@@ -32,10 +32,20 @@ elo_calc = EloCalculator(k_factor=Config.ELO_K_FACTOR)
 simulator = SeasonSimulator(teams, matches, elo_calc)
 
 # Store baseline probabilities (computed once at startup)
-# Use serial mode to avoid Windows multiprocessing issues with Flask debug mode
-print("Computing baseline probabilities...")
-baseline_probabilities = simulator.run_simulations(Config.NUM_SIMULATIONS, parallel=False)
-print("✓ Baseline probabilities computed")
+# Lazy initialization to avoid multiprocessing issues when workers import this module
+baseline_probabilities = None
+baseline_simulation_time = None
+
+def get_baseline_probabilities():
+    """Compute baseline probabilities on first access (lazy initialization)."""
+    global baseline_probabilities, baseline_simulation_time
+    if baseline_probabilities is None:
+        print("Computing baseline probabilities...")
+        start_time = time.time()
+        baseline_probabilities = simulator.run_simulations(Config.NUM_SIMULATIONS, parallel=True)
+        baseline_simulation_time = time.time() - start_time
+        print(f"✓ Baseline probabilities computed in {baseline_simulation_time:.3f}s")
+    return baseline_probabilities
 
 
 @app.route('/')
@@ -101,11 +111,12 @@ def get_initial_state():
 
     return jsonify({
         'teams': teams_data,
-        'probabilities': baseline_probabilities,
+        'probabilities': get_baseline_probabilities(),
         'completed_matches': completed_matches,
         'upcoming_matches': upcoming_matches,
         'elo_ratings': elo_ratings,
-        'num_simulations': Config.NUM_SIMULATIONS
+        'num_simulations': Config.NUM_SIMULATIONS,
+        'simulation_time': baseline_simulation_time or 0
     })
 
 
@@ -239,7 +250,7 @@ def reset():
     return jsonify({
         'status': 'success',
         'message': 'Reset to baseline probabilities',
-        'probabilities': baseline_probabilities,
+        'probabilities': get_baseline_probabilities(),
         'teams': teams_data
     })
 
