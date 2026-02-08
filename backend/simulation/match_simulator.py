@@ -39,14 +39,14 @@ class MatchSimulator:
             >>> (score1 == 3 or score2 == 3) and 0 <= score1 <= 3 and 0 <= score2 <= 3
             True
         """
+        # Calculate win probability once (same for all maps)
+        win_prob = self.elo.calculate_win_probability(rating1, rating2)
+
         team1_score = 0
         team2_score = 0
 
         # Simulate maps until one team wins 3
         while team1_score < 3 and team2_score < 3:
-            # Calculate win probability for this map
-            win_prob = self.elo.calculate_win_probability(rating1, rating2)
-
             # Simulate map result
             if random.random() < win_prob:
                 team1_score += 1

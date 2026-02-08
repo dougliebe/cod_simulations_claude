@@ -11,7 +11,7 @@ class Config:
     NUM_TEAMS = 12
     MATCHES_PER_TEAM = 11
     TOTAL_MATCHES = 66
-    NUM_SIMULATIONS = 1000
+    NUM_SIMULATIONS = 10000
     BEST_OF = 5  # Best-of-5 series
     PLAY_IN_TEAMS = 10  # Top 10 make play-ins
     BRACKET_TEAMS = 6  # Top 6 go directly to bracket

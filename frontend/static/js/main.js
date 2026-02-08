@@ -38,6 +38,11 @@ class App {
             // Render game boxes
             this.gameBoxes.renderGameBoxes(data.upcoming_matches);
 
+            // Show simulation info for initial load
+            if (data.simulation_time !== undefined && data.num_simulations) {
+                this.table.showSimulationInfo(data.simulation_time, data.num_simulations);
+            }
+
             // Attach event listeners
             this.attachEventListeners();
 
@@ -164,9 +169,9 @@ class App {
             // Call reset API
             const result = await SimulationAPI.reset();
 
-            // Update table to baseline with teams data
+            // Reset table to baseline sorted by current standing
             if (result.teams) {
-                this.table.updateTableWithTeams(result.teams, result.probabilities);
+                this.table.resetTableWithTeams(result.teams, result.probabilities);
             } else {
                 // Fallback to old method if teams data not available
                 this.table.updateTable(result.probabilities);
