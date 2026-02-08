@@ -189,12 +189,616 @@ Results aggregated into probability distributions.
 - Example: 5 teams → [1st: Team A] + [tied: Teams B,C,D] + [5th: Team E]
 - Recursively resolve ties within each group
 
+**See detailed implementation breakdown in the [Tiebreaker System Deep Dive](#tiebreaker-system-deep-dive) section below.**
+
 ### Performance Metrics
 
 - **1000 simulations**: ~0.7 seconds
 - **Throughput**: ~1,400 simulations/second
 - **Test suite**: 91 tests, all passing in <5 seconds
 - **API response time**: <3 seconds (includes simulation + network)
+
+## Tiebreaker System Deep Dive
+
+This section provides a complete breakdown of how the 7-tier tiebreaker system is implemented, including inputs, outputs, code examples, and edge case handling.
+
+### Overview
+
+The tiebreaker system (`backend/simulation/tiebreaker.py`) is invoked at the end of each simulation iteration to convert team records into final seeding positions (1st through 12th). It implements a cascading 7-tier system where each tier attempts to break ties, and if teams remain tied, the next tier is applied.
+
+### Inputs and Outputs
+
+**Inputs (from `SeasonStandings`):**
+- `teams`: Dictionary of `Team` objects with match/map records
+- `matches`: List of `Match` objects (both completed and upcoming)
+- Team records updated via `standings.update_team_records_from_matches()`
+
+**Outputs:**
+- `List[str]`: Ordered list of team names from 1st seed to 12th seed
+
+**Entry Point:**
+```python
+# Called from season_simulator.py after all matches simulated
+resolver = TiebreakerResolver(standings)
+final_seeding = resolver.calculate_seeding()
+# Returns: ['OpTic Texas', 'Atlanta FaZe', 'LA Thieves', ...]
+```
+
+### Step-by-Step Implementation
+
+#### Initial Grouping
+
+Before applying tiebreakers, teams are grouped by their match win percentage:
+
+```python
+# From tiebreaker.py:28-36
+def calculate_seeding(self) -> List[str]:
+    # Start with teams grouped by match win percentage
+    groups = self.standings.group_teams_by_record(use_maps=False)
+    # groups might look like:
+    # [['Team A'], ['Team B', 'Team C', 'Team D'], ['Team E', 'Team F'], ...]
+
+    final_seeding = []
+    for group in groups:
+        resolved = self.resolve_tie(group)  # Apply tiebreakers to each group
+        final_seeding.extend(resolved)
+
+    return final_seeding
+```
+
+**Key Implementation Detail (`standings.py:206-238`):**
+```python
+def group_teams_by_record(self, use_maps: bool = False) -> List[List[str]]:
+    groups = []
+    current_group = []
+    current_pct = None
+
+    for team in self.get_teams_by_record(use_maps):
+        pct = self.teams[team].map_win_pct if use_maps else self.teams[team].match_win_pct
+
+        # Floating point tolerance check
+        if current_pct is None or abs(pct - current_pct) < 0.0001:
+            current_group.append(team)
+            current_pct = pct
+        else:
+            if current_group:
+                groups.append(current_group)
+            current_group = [team]
+            current_pct = pct
+
+    if current_group:
+        groups.append(current_group)
+
+    return groups
+```
+
+**Edge Case Handled:** Uses `abs(pct - current_pct) < 0.0001` to avoid floating-point precision issues when comparing win percentages.
+
+---
+
+#### Tier 1: Head-to-Head Match Win Percentage
+
+**Rule:** Among tied teams, the one with the best match win percentage in games between ONLY these teams wins.
+
+**Implementation (`tiebreaker.py:83-105`):**
+```python
+def _apply_tier1_h2h_match_pct(self, teams: List[str]) -> Optional[List[str]]:
+    # CRITICAL: Skip if not all teams played each other
+    if not self.standings.all_teams_played_each_other(teams):
+        return None  # Move to next tier
+
+    # Calculate h2h match records (wins, losses)
+    h2h_records = self.standings.get_head_to_head_record(teams, use_maps=False)
+    # Returns: {'Team A': (2, 0), 'Team B': (1, 1), 'Team C': (0, 2)}
+
+    # Calculate win percentages
+    win_pcts = {}
+    for team, (wins, losses) in h2h_records.items():
+        total = wins + losses
+        win_pcts[team] = wins / total if total > 0 else 0.0
+
+    # Sort by h2h win percentage (descending)
+    sorted_teams = sorted(teams, key=lambda t: win_pcts[t], reverse=True)
+
+    # Handle partial separation (see below)
+    return self._handle_partial_separation(sorted_teams, win_pcts)
+```
+
+**Validation Check (`standings.py:43-70`):**
+```python
+def all_teams_played_each_other(self, team_names: List[str]) -> bool:
+    if len(team_names) < 2:
+        return True
+
+    # Build set of required matchups
+    required_matchups: Set[FrozenSet[str]] = set()
+    for i, team1 in enumerate(team_names):
+        for team2 in team_names[i + 1:]:
+            required_matchups.add(frozenset([team1, team2]))
+    # For 3 teams: {frozenset({'A','B'}), frozenset({'A','C'}), frozenset({'B','C'})}
+
+    # Check actual matchups from completed matches
+    actual_matchups: Set[FrozenSet[str]] = set()
+    for match in self.get_head_to_head_matches(team_names):
+        actual_matchups.add(frozenset([match.team1, match.team2]))
+
+    # All required matchups must exist
+    return required_matchups.issubset(actual_matchups)
+```
+
+**Example Scenario:**
+```python
+# 3 teams tied at 5-6 overall
+# H2H results: A beat B (3-0), B beat C (3-1), A beat C (3-2)
+# H2H records: A (2-0), B (1-1), C (0-2)
+# Win %: A (100%), B (50%), C (0%)
+# Result: ['Team A', 'Team B', 'Team C']
+```
+
+**Edge Case: Circular Head-to-Head**
+```python
+# A > B (3-0), B > C (3-1), C > A (3-2)
+# H2H records: A (1-1), B (1-1), C (1-1)
+# All teams have 50% h2h win rate → No separation → Returns None → Move to Tier 2
+```
+
+---
+
+#### Tier 2: Head-to-Head Map Win Percentage
+
+**Rule:** Same as Tier 1, but uses individual map wins/losses instead of match wins/losses.
+
+**Implementation (`tiebreaker.py:107-129`):**
+```python
+def _apply_tier2_h2h_map_pct(self, teams: List[str]) -> Optional[List[str]]:
+    if not self.standings.all_teams_played_each_other(teams):
+        return None
+
+    # Calculate h2h MAP records
+    h2h_records = self.standings.get_head_to_head_record(teams, use_maps=True)
+    # Returns: {'Team A': (5, 3), 'Team B': (4, 7), 'Team C': (3, 6)}
+
+    win_pcts = {}
+    for team, (wins, losses) in h2h_records.items():
+        total = wins + losses
+        win_pcts[team] = wins / total if total > 0 else 0.0
+
+    sorted_teams = sorted(teams, key=lambda t: win_pcts[t], reverse=True)
+    return self._handle_partial_separation(sorted_teams, win_pcts)
+```
+
+**Map Record Calculation (`standings.py:92-97`):**
+```python
+for match in h2h_matches:
+    if use_maps:
+        # Map-level record
+        wins1, losses1 = records[match.team1]
+        wins2, losses2 = records[match.team2]
+
+        records[match.team1] = (wins1 + match.team1_score, losses1 + match.team2_score)
+        records[match.team2] = (wins2 + match.team2_score, losses2 + match.team1_score)
+```
+
+**Example Scenario (Circular Tiebreaker Resolution):**
+```python
+# A > B (3-0), B > C (3-1), C > A (3-2)
+# Tier 1 fails (all 1-1 in matches)
+# Map records in h2h:
+#   A: 3 + 2 = 5 maps won, 0 + 3 = 3 maps lost → 5/8 = 62.5%
+#   B: 3 + 1 = 4 won, 0 + 3 = 3 lost → 4/7 = 57.1%
+#   C: 3 + 0 = 3 won, 1 + 2 = 3 lost → 3/6 = 50%
+# Result: ['Team A', 'Team B', 'Team C']
+```
+
+---
+
+#### Tier 3: Overall Match Win Percentage
+
+**Rule:** Compare overall match records (including games outside the tied group).
+
+**Implementation (`tiebreaker.py:131-145`):**
+```python
+def _apply_tier3_overall_match_pct(self, teams: List[str]) -> Optional[List[str]]:
+    # Get OVERALL match win percentages (pre-calculated in Team objects)
+    win_pcts = {
+        team: self.standings.teams[team].match_win_pct
+        for team in teams
+    }
+    # Team.match_win_pct = match_wins / (match_wins + match_losses)
+
+    sorted_teams = sorted(teams, key=lambda t: win_pcts[t], reverse=True)
+    return self._handle_partial_separation(sorted_teams, win_pcts)
+```
+
+**When This Tier Applies:**
+- Teams haven't all played each other (Tier 1/2 skipped)
+- OR Tier 1/2 couldn't separate teams
+
+**Example Scenario:**
+```python
+# Team A vs Team B (never played each other)
+# A: 7-4 overall (63.6%), B: 6-5 overall (54.5%)
+# Result: ['Team A', 'Team B']
+```
+
+---
+
+#### Tier 4: Overall Map Win Percentage
+
+**Rule:** Compare overall map records.
+
+**Implementation (`tiebreaker.py:147-161`):**
+```python
+def _apply_tier4_overall_map_pct(self, teams: List[str]) -> Optional[List[str]]:
+    win_pcts = {
+        team: self.standings.teams[team].map_win_pct
+        for team in teams
+    }
+    # Team.map_win_pct = map_wins / (map_wins + map_losses)
+
+    sorted_teams = sorted(teams, key=lambda t: win_pcts[t], reverse=True)
+    return self._handle_partial_separation(sorted_teams, win_pcts)
+```
+
+**Example Scenario:**
+```python
+# Both teams 5-5 in matches (50%)
+# A: 18-17 in maps (51.4%), B: 16-19 in maps (45.7%)
+# Result: ['Team A', 'Team B']
+```
+
+---
+
+#### Tier 5: Strength of Schedule (Match Win %)
+
+**Rule:** Average win percentage of all opponents faced (excluding games vs the team itself).
+
+**Implementation (`tiebreaker.py:163-177`):**
+```python
+def _apply_tier5_sos_match(self, teams: List[str]) -> Optional[List[str]]:
+    # Calculate SOS for each team
+    sos_values = {
+        team: self.standings.calculate_strength_of_schedule(team, use_maps=False)
+        for team in teams
+    }
+
+    sorted_teams = sorted(teams, key=lambda t: sos_values[t], reverse=True)
+    return self._handle_partial_separation(sorted_teams, sos_values)
+```
+
+**SOS Calculation (`standings.py:111-181`):**
+```python
+def calculate_strength_of_schedule(self, team_name: str, use_maps: bool = False) -> float:
+    # Find all opponents
+    opponents = []
+    for match in self.get_completed_matches():
+        if match.team1 == team_name:
+            opponents.append(match.team2)
+        elif match.team2 == team_name:
+            opponents.append(match.team1)
+
+    if not opponents:
+        return 0.0
+
+    # Calculate win percentage for each opponent (EXCLUDING games vs team_name)
+    opponent_win_pcts = []
+    for opp in opponents:
+        opp_team = self.teams[opp]
+
+        if use_maps:
+            opp_wins = opp_team.map_wins
+            opp_losses = opp_team.map_losses
+
+            # Subtract maps from games vs team_name
+            for match in self.get_completed_matches():
+                if match.team1 == opp and match.team2 == team_name:
+                    opp_wins -= match.team1_score
+                    opp_losses -= match.team2_score
+                elif match.team2 == opp and match.team1 == team_name:
+                    opp_wins -= match.team2_score
+                    opp_losses -= match.team1_score
+
+            total = opp_wins + opp_losses
+            win_pct = opp_wins / total if total > 0 else 0.0
+        else:
+            opp_wins = opp_team.match_wins
+            opp_losses = opp_team.match_losses
+
+            # Subtract match vs team_name
+            for match in self.get_completed_matches():
+                if (match.team1 == opp and match.team2 == team_name) or \
+                   (match.team2 == opp and match.team1 == team_name):
+                    if match.winner == opp:
+                        opp_wins -= 1
+                    else:
+                        opp_losses -= 1
+
+            total = opp_wins + opp_losses
+            win_pct = opp_wins / total if total > 0 else 0.0
+
+        opponent_win_pcts.append(win_pct)
+
+    # Return average opponent win percentage
+    return sum(opponent_win_pcts) / len(opponent_win_pcts)
+```
+
+**Example Scenario:**
+```python
+# Team A: beat Team Strong (8-3), lost to Team Weak (2-9)
+# Team B: beat Team Weak (2-9), lost to Team Strong (8-3)
+#
+# SOS for A: (8/11 + 2/11) / 2 = (0.727 + 0.182) / 2 = 0.455
+# SOS for B: (2/11 + 8/11) / 2 = (0.182 + 0.727) / 2 = 0.455
+# TIED → No separation → Move to Tier 6
+```
+
+**Critical Detail:** Opponent records EXCLUDE games against the team being evaluated to avoid circular logic.
+
+---
+
+#### Tier 6: Strength of Schedule (Map Win %)
+
+**Rule:** Same as Tier 5, but uses map win percentage of opponents.
+
+**Implementation (`tiebreaker.py:179-193`):**
+```python
+def _apply_tier6_sos_map(self, teams: List[str]) -> Optional[List[str]]:
+    sos_values = {
+        team: self.standings.calculate_strength_of_schedule(team, use_maps=True)
+        for team in teams
+    }
+
+    sorted_teams = sorted(teams, key=lambda t: sos_values[t], reverse=True)
+    return self._handle_partial_separation(sorted_teams, sos_values)
+```
+
+**When This Applies:** Teams have identical overall records AND identical match-based SOS, but different map-based SOS.
+
+---
+
+#### Tier 7: Seed-Specific Rules (Random)
+
+**Rule:** If all 6 previous tiers fail to separate teams, use seed-specific rules (coin flip for most seeds, tiebreaker match for specific seeds).
+
+**Implementation (`tiebreaker.py:195-209`):**
+```python
+def _apply_tier7_seed_specific(self, teams: List[str]) -> List[str]:
+    """
+    Tier 7: Seed-specific rules.
+
+    - Seeds 1/2/3/8: Tiebreaker match (simulated as random for now)
+    - Seeds 4/9/10/11: Coin flip (random)
+    - Other seeds: Random or higher seed chooses
+
+    For simulation purposes, use random selection.
+    """
+    shuffled = list(teams)
+    random.shuffle(shuffled)  # Simulates coin flip/random selection
+    return shuffled
+```
+
+**Note:** This tier ALWAYS returns a result (never `None`), guaranteeing the recursive tiebreaker eventually terminates.
+
+---
+
+### Recursive Partial Resolution
+
+The most critical feature of the tiebreaker system is its ability to handle **partial separation** — when a tiebreaker separates SOME teams but leaves others tied.
+
+**Implementation (`tiebreaker.py:211-263`):**
+```python
+def _handle_partial_separation(
+    self,
+    sorted_teams: List[str],
+    metric_values: Dict[str, float]
+) -> Optional[List[str]]:
+    """
+    Handle case where tiebreaker partially separates teams.
+
+    If tiebreaker creates groups (some teams tied, some separated),
+    recursively resolve ties within each group.
+    """
+    # Group teams by metric value (with floating point tolerance)
+    groups = []
+    current_group = [sorted_teams[0]]
+    current_value = metric_values[sorted_teams[0]]
+
+    for team in sorted_teams[1:]:
+        value = metric_values[team]
+
+        if abs(value - current_value) < 1e-9:  # Floating point tolerance
+            current_group.append(team)  # Same value → tied
+        else:
+            # Different value → finalize current group, start new one
+            groups.append(current_group)
+            current_group = [team]
+            current_value = value
+
+    groups.append(current_group)  # Add last group
+
+    # If only one group, NO separation occurred
+    if len(groups) == 1:
+        return None  # Try next tier
+
+    # Partial or full separation occurred
+    # Recursively resolve ties within each group
+    resolved = []
+    for group in groups:
+        if len(group) == 1:
+            resolved.extend(group)  # No tie
+        else:
+            # RECURSIVE CALL: Restart tiebreaker process for this subgroup
+            resolved.extend(self.resolve_tie(group))
+
+    return resolved
+```
+
+**Example: 5-Way Tie Partial Resolution**
+```python
+# Initial: ['A', 'B', 'C', 'D', 'E'] all tied at 5-6 overall
+#
+# Tier 3 (overall match %): All 5-6 (45.5%) → No separation
+# Tier 4 (overall map %):
+#   A: 20-16 (55.5%)
+#   B: 18-18 (50%)
+#   C: 18-18 (50%)
+#   D: 18-18 (50%)
+#   E: 16-20 (44.4%)
+#
+# Groups formed: [[A], [B, C, D], [E]]
+#
+# Result after recursive resolution:
+#   1. A → No tie
+#   2. resolve_tie([B, C, D]) → (recursive call, tries Tier 1-7 again on just these 3)
+#   3. E → No tie
+```
+
+**Recursive Call Flow:**
+```
+resolve_tie(['B', 'C', 'D'])
+  → Tier 1 (h2h match %): B beat C, C beat D, D beat B → All 1-1 → None
+  → Tier 2 (h2h map %): B (6 maps), C (5 maps), D (4 maps) → ['B', 'C', 'D']
+
+Final seeding: ['A', 'B', 'C', 'D', 'E']
+```
+
+---
+
+### Edge Cases and Special Handling
+
+#### 1. Floating-Point Precision
+
+**Problem:** Win percentages are floats (e.g., 0.545454...), which can have precision issues.
+
+**Solution:** Use tolerance checks throughout:
+```python
+# In group_teams_by_record (standings.py:223)
+if current_pct is None or abs(pct - current_pct) < 0.0001:
+
+# In _handle_partial_separation (tiebreaker.py:237)
+if abs(value - current_value) < 1e-9:
+```
+
+#### 2. Teams Haven't Played Each Other
+
+**Problem:** Can't use head-to-head tiebreakers if teams haven't all played each other.
+
+**Solution:** Validation check returns `None`, skipping to next tier:
+```python
+if not self.standings.all_teams_played_each_other(teams):
+    return None
+```
+
+**Test Case (`test_tiebreaker.py:233-253`):**
+```python
+# Only A vs B played, missing A-C and B-C matchups
+matches = [Match('m1', 'Team A', 'Team B', 3, 1)]
+
+result = resolver._apply_tier1_h2h_match_pct(['Team A', 'Team B', 'Team C'])
+assert result is None  # Skips tier
+```
+
+#### 3. Circular Head-to-Head
+
+**Problem:** A beats B, B beats C, C beats A → All have 1-1 h2h record.
+
+**Solution:** Tier 1 returns `None` (no separation), moves to Tier 2 (map percentage).
+
+**Test Case (`test_tiebreaker.py:54-85`):**
+```python
+matches = [
+    Match('m1', 'Team A', 'Team B', 3, 0),  # A > B
+    Match('m2', 'Team B', 'Team C', 3, 1),  # B > C
+    Match('m3', 'Team C', 'Team A', 3, 2),  # C > A (circular!)
+]
+
+# Tier 1 can't separate (all 1-1)
+# Tier 2 uses map %: A (5-3), B (4-3), C (3-3)
+result = resolver.resolve_tie(['Team A', 'Team B', 'Team C'])
+assert result[0] == 'Team A'
+```
+
+#### 4. No Matches Played (All 0-0)
+
+**Problem:** New season with no matches → all teams 0-0 in every metric.
+
+**Solution:** Falls through to Tier 7 (random):
+```python
+matches = []  # No matches
+result = resolver.resolve_tie(['Team A', 'Team B', 'Team C', 'Team D'])
+# Returns random ordering
+assert len(result) == 4
+assert set(result) == {'Team A', 'Team B', 'Team C', 'Team D'}
+```
+
+#### 5. Division by Zero in Win Percentages
+
+**Problem:** Team has no matches → `0 / 0` when calculating win percentage.
+
+**Solution:** Explicit zero-check in every percentage calculation:
+```python
+total = wins + losses
+win_pcts[team] = wins / total if total > 0 else 0.0
+```
+
+#### 6. SOS Circular Logic
+
+**Problem:** When calculating Team A's SOS, if we include Team A's own games against opponents, we create circular dependency.
+
+**Solution:** Exclude games against the team being evaluated:
+```python
+# From calculate_strength_of_schedule (standings.py:151-157)
+for match in self.get_completed_matches():
+    if match.team1 == opp and match.team2 == team_name:
+        opp_wins -= match.team1_score  # Remove this game
+        opp_losses -= match.team2_score
+    elif match.team2 == opp and match.team1 == team_name:
+        opp_wins -= match.team2_score
+        opp_losses -= match.team1_score
+```
+
+#### 7. Multiple Recursion Levels
+
+**Problem:** Partial separation can occur at multiple levels.
+
+**Example:**
+```
+Initial: [A, B, C, D, E, F, G, H] all tied
+Tier 4 → [[A, B], [C, D, E], [F], [G, H]]
+  resolve_tie([A, B]) → Tier 5 → [[A], [B]]
+  resolve_tie([C, D, E]) → Tier 2 → [[C], [D, E]]
+    resolve_tie([D, E]) → Tier 7 → random
+  resolve_tie([G, H]) → Tier 1 → [[G], [H]]
+```
+
+**Solution:** Recursive algorithm naturally handles this:
+```python
+for group in groups:
+    if len(group) == 1:
+        resolved.extend(group)
+    else:
+        resolved.extend(self.resolve_tie(group))  # Recursive call
+```
+
+---
+
+### Testing and Validation
+
+The tiebreaker system has **comprehensive test coverage** in `tests/test_tiebreaker.py`:
+
+- **Basic tier tests**: Each tier independently tested
+- **Circular tiebreaker**: A>B>C>A scenario
+- **Partial resolution**: 5-team tie splitting into sub-groups
+- **Edge cases**: No matches, missing matchups, all identical records
+- **SOS calculation**: Correct opponent record exclusion
+- **Full integration**: Complete seeding calculation
+
+Run tests:
+```bash
+pytest tests/test_tiebreaker.py -v
+```
+
+Expected output: All tests passing, demonstrating correct handling of all scenarios.
 
 ## Configuration
 
