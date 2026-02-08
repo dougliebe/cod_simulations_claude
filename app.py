@@ -32,8 +32,9 @@ elo_calc = EloCalculator(k_factor=Config.ELO_K_FACTOR)
 simulator = SeasonSimulator(teams, matches, elo_calc)
 
 # Store baseline probabilities (computed once at startup)
+# Use serial mode to avoid Windows multiprocessing issues with Flask debug mode
 print("Computing baseline probabilities...")
-baseline_probabilities = simulator.run_simulations(Config.NUM_SIMULATIONS)
+baseline_probabilities = simulator.run_simulations(Config.NUM_SIMULATIONS, parallel=False)
 print("✓ Baseline probabilities computed")
 
 
