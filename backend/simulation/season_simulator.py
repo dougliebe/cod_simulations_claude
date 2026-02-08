@@ -1,8 +1,9 @@
 """Monte Carlo season simulator for Call of Duty."""
 
-import copy
 from collections import defaultdict
 from typing import Dict, List, Optional
+from multiprocessing import Pool, cpu_count
+from functools import partial
 from backend.models.team import Team
 from backend.models.match import Match
 from backend.models.standings import SeasonStandings
@@ -36,7 +37,8 @@ class SeasonSimulator:
     def run_simulations(
         self,
         num_iterations: int = 1000,
-        adjusted_matches: Optional[List[Match]] = None
+        adjusted_matches: Optional[List[Match]] = None,
+        parallel: bool = True
     ) -> Dict[str, Dict[str, float]]:
         """
         Run Monte Carlo simulations to calculate probabilities.
@@ -54,6 +56,7 @@ class SeasonSimulator:
         Args:
             num_iterations: Number of simulations to run
             adjusted_matches: Optional list of user-adjusted match results
+            parallel: Use multiprocessing for speedup (default: True)
 
         Returns:
             Dictionary mapping team name to probability dictionary:
@@ -66,6 +69,19 @@ class SeasonSimulator:
                 }
             }
         """
+        # Use parallel execution for large runs (overhead not worth it for <500)
+        if parallel and num_iterations >= 500:
+            return self._run_parallel(num_iterations, adjusted_matches)
+
+        # Serial execution for small runs
+        return self._run_serial(num_iterations, adjusted_matches)
+
+    def _run_serial(
+        self,
+        num_iterations: int,
+        adjusted_matches: Optional[List[Match]] = None
+    ) -> Dict[str, Dict[str, float]]:
+        """Run simulations serially (no parallelization)."""
         # Track results for each team
         results = defaultdict(lambda: defaultdict(int))
 
@@ -73,7 +89,11 @@ class SeasonSimulator:
         for iteration in range(num_iterations):
             # Create fresh copies for this iteration
             sim_teams = self._create_fresh_teams()
-            sim_matches = copy.deepcopy(self.base_matches)
+            # Create fresh Match objects instead of deepcopy (4x faster)
+            sim_matches = [
+                Match(m.id, m.team1, m.team2, m.team1_score, m.team2_score, m.start_date)
+                for m in self.base_matches
+            ]
 
             # Apply user adjustments if provided
             if adjusted_matches:
@@ -231,6 +251,125 @@ class SeasonSimulator:
 
         return probabilities
 
+    def _run_parallel(
+        self,
+        num_iterations: int,
+        adjusted_matches: Optional[List[Match]] = None
+    ) -> Dict[str, Dict[str, float]]:
+        """
+        Run simulations in parallel using multiprocessing.
+
+        Splits iterations across multiple worker processes for speedup.
+
+        Args:
+            num_iterations: Number of simulations to run
+            adjusted_matches: Optional user-adjusted matches
+
+        Returns:
+            Dictionary of probabilities for each team
+        """
+        # Determine number of workers (cap at 8 to avoid overhead)
+        num_workers = min(cpu_count(), 8)
+        chunk_size = num_iterations // num_workers
+
+        # Split work across workers
+        chunks = [chunk_size] * num_workers
+        chunks[-1] += num_iterations % num_workers  # Handle remainder
+
+        # Create worker arguments (each worker needs chunk size and adjusted_matches)
+        worker_args = [(chunk, adjusted_matches) for chunk in chunks]
+
+        # Run workers in parallel
+        with Pool(processes=num_workers) as pool:
+            chunk_results = pool.starmap(self._run_chunk, worker_args)
+
+        # Merge results from all workers
+        return self._merge_results(chunk_results, num_iterations)
+
+    def _run_chunk(
+        self,
+        chunk_size: int,
+        adjusted_matches: Optional[List[Match]] = None
+    ) -> Dict[str, Dict[str, int]]:
+        """
+        Worker function: Run a chunk of iterations.
+
+        Each worker runs independently with no shared state.
+
+        Args:
+            chunk_size: Number of iterations to run
+            adjusted_matches: Optional user-adjusted matches
+
+        Returns:
+            Dictionary of counts for each team (not probabilities)
+        """
+        results = defaultdict(lambda: defaultdict(int))
+
+        for _ in range(chunk_size):
+            # Create fresh copies for this iteration
+            sim_teams = self._create_fresh_teams()
+            sim_matches = [
+                Match(m.id, m.team1, m.team2, m.team1_score, m.team2_score, m.start_date)
+                for m in self.base_matches
+            ]
+
+            # Apply user adjustments if provided
+            if adjusted_matches:
+                sim_matches = self._apply_user_adjustments(sim_matches, adjusted_matches)
+
+            # Create standings
+            standings = SeasonStandings(sim_teams, sim_matches)
+
+            # Update team records from completed matches
+            standings.update_team_records_from_matches()
+
+            # Simulate remaining matches
+            self._simulate_remaining_matches(standings)
+
+            # Calculate final seeding
+            resolver = TiebreakerResolver(standings)
+            final_seeding = resolver.calculate_seeding()
+
+            # Record results
+            for seed, team_name in enumerate(final_seeding, 1):
+                results[team_name][f"seed_{seed}"] += 1
+
+                # Track play-in qualification (top 10)
+                if seed <= 10:
+                    results[team_name]["make_play_ins"] += 1
+
+                # Track bracket qualification (top 6)
+                if seed <= 6:
+                    results[team_name]["make_bracket"] += 1
+
+        return dict(results)
+
+    def _merge_results(
+        self,
+        chunk_results: List[Dict[str, Dict[str, int]]],
+        num_iterations: int
+    ) -> Dict[str, Dict[str, float]]:
+        """
+        Merge results from parallel workers.
+
+        Args:
+            chunk_results: List of result dictionaries from each worker
+            num_iterations: Total number of iterations
+
+        Returns:
+            Dictionary of probabilities for each team
+        """
+        merged = defaultdict(lambda: defaultdict(int))
+
+        # Sum counts from all workers
+        for chunk in chunk_results:
+            for team_name, stats in chunk.items():
+                for key, count in stats.items():
+                    merged[team_name][key] += count
+
+        # Convert counts to probabilities
+        return self._calculate_probabilities(dict(merged), num_iterations)
+
     def get_current_standings(
         self,
         adjusted_matches: Optional[List[Match]] = None
@@ -246,7 +385,11 @@ class SeasonSimulator:
         """
         # Create standings with completed matches
         sim_teams = self._create_fresh_teams()
-        sim_matches = copy.deepcopy(self.base_matches)
+        # Create fresh Match objects instead of deepcopy
+        sim_matches = [
+            Match(m.id, m.team1, m.team2, m.team1_score, m.team2_score, m.start_date)
+            for m in self.base_matches
+        ]
 
         # Apply user adjustments if provided
         if adjusted_matches:

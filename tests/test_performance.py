@@ -53,14 +53,14 @@ class TestPerformance:
 
     def test_simulation_scales_linearly(self, full_season_simulator):
         """Simulation time should scale roughly linearly with iterations."""
-        # Time 100 iterations
+        # Time 100 iterations (serial mode for fair comparison)
         start = time.time()
-        full_season_simulator.run_simulations(num_iterations=100)
+        full_season_simulator.run_simulations(num_iterations=100, parallel=False)
         time_100 = time.time() - start
 
-        # Time 500 iterations
+        # Time 500 iterations (serial mode for fair comparison)
         start = time.time()
-        full_season_simulator.run_simulations(num_iterations=500)
+        full_season_simulator.run_simulations(num_iterations=500, parallel=False)
         time_500 = time.time() - start
 
         # 500 iterations should take ~5x as long as 100
