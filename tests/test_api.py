@@ -111,7 +111,7 @@ class TestAPIEndpoints:
 
         # Check simulation metadata
         assert isinstance(data['simulation_time'], (int, float))
-        assert data['iterations'] == 1000
+        assert data['iterations'] == 10000
 
     def test_simulate_missing_body(self, client):
         """Test POST /api/simulate with missing body."""

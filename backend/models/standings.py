@@ -117,7 +117,6 @@ class SeasonStandings:
         Calculate strength of schedule for a team.
 
         SOS = average win percentage of all opponents faced.
-        Excludes games against the team itself.
 
         Args:
             team_name: Team to calculate SOS for
@@ -137,43 +136,15 @@ class SeasonStandings:
         if not opponents:
             return 0.0
 
-        # Calculate win percentage for each opponent (excluding games vs team_name)
+        # Calculate win percentage for each opponent using their full record
         opponent_win_pcts = []
         for opp in opponents:
             opp_team = self.teams[opp]
 
             if use_maps:
-                # Calculate map win % excluding games vs team_name
-                opp_wins = opp_team.map_wins
-                opp_losses = opp_team.map_losses
-
-                # Subtract maps from games vs team_name
-                for match in self.get_completed_matches():
-                    if match.team1 == opp and match.team2 == team_name:
-                        opp_wins -= match.team1_score
-                        opp_losses -= match.team2_score
-                    elif match.team2 == opp and match.team1 == team_name:
-                        opp_wins -= match.team2_score
-                        opp_losses -= match.team1_score
-
-                total = opp_wins + opp_losses
-                win_pct = opp_wins / total if total > 0 else 0.0
+                win_pct = opp_team.map_win_pct
             else:
-                # Calculate match win % excluding games vs team_name
-                opp_wins = opp_team.match_wins
-                opp_losses = opp_team.match_losses
-
-                # Subtract match vs team_name
-                for match in self.get_completed_matches():
-                    if (match.team1 == opp and match.team2 == team_name) or \
-                       (match.team2 == opp and match.team1 == team_name):
-                        if match.winner == opp:
-                            opp_wins -= 1
-                        else:
-                            opp_losses -= 1
-
-                total = opp_wins + opp_losses
-                win_pct = opp_wins / total if total > 0 else 0.0
+                win_pct = opp_team.match_win_pct
 
             opponent_win_pcts.append(win_pct)
 

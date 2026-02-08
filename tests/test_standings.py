@@ -113,13 +113,13 @@ class TestSeasonStandings:
     def test_calculate_strength_of_schedule_matches(self, basic_standings):
         """Test strength of schedule calculation using match win %."""
         # Team D played A, B, C (all lost to D)
-        # A: 3-0 overall, 2-0 excluding D = 100%
-        # B: 2-1 overall, 1-1 excluding D = 50%
-        # C: 1-2 overall, 0-2 excluding D = 0%
-        # SOS for D = (1.0 + 0.5 + 0.0) / 3 = 0.5
+        # A: 3-0 overall = 100%
+        # B: 2-1 overall = 66.67%
+        # C: 1-2 overall = 33.33%
+        # SOS for D = (1.0 + 0.6667 + 0.3333) / 3 = 0.6667
 
         sos = basic_standings.calculate_strength_of_schedule('Team D', use_maps=False)
-        assert abs(sos - 0.5) < 0.01
+        assert abs(sos - 0.6667) < 0.01
 
     def test_get_teams_by_record(self, basic_standings):
         """Test getting teams sorted by win percentage."""
