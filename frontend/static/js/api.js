@@ -79,6 +79,28 @@ class SimulationAPI {
     }
 
     /**
+     * Force recomputation of baseline probabilities
+     * @returns {Promise<Object>} Fresh baseline probabilities with new timing
+     */
+    static async recomputeBaseline() {
+        try {
+            const response = await fetch(`${this.BASE_URL}/recompute-baseline`, {
+                method: 'POST'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error recomputing baseline:', error);
+            throw new Error('Failed to recompute baseline');
+        }
+    }
+
+    /**
      * Get detailed information about a specific match
      * @param {string} matchId - Match identifier
      * @returns {Promise<Object>} Match details with win probabilities

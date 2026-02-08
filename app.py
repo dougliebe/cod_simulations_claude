@@ -47,6 +47,16 @@ def get_baseline_probabilities():
         print(f"✓ Baseline probabilities computed in {baseline_simulation_time:.3f}s")
     return baseline_probabilities
 
+def recompute_baseline_probabilities():
+    """Force recomputation of baseline probabilities."""
+    global baseline_probabilities, baseline_simulation_time
+    print("Recomputing baseline probabilities...")
+    start_time = time.time()
+    baseline_probabilities = simulator.run_simulations(Config.NUM_SIMULATIONS, parallel=True)
+    baseline_simulation_time = time.time() - start_time
+    print(f"✓ Baseline probabilities recomputed in {baseline_simulation_time:.3f}s")
+    return baseline_probabilities
+
 
 @app.route('/')
 def index():
@@ -252,6 +262,56 @@ def reset():
         'message': 'Reset to baseline probabilities',
         'probabilities': get_baseline_probabilities(),
         'teams': teams_data
+    })
+
+
+@app.route('/api/recompute-baseline', methods=['POST'])
+def recompute_baseline():
+    """
+    Force recomputation of baseline probabilities.
+
+    Returns:
+        JSON with success status, fresh baseline probabilities, and timing
+    """
+    # Force recomputation
+    probabilities = recompute_baseline_probabilities()
+
+    # Get current standings
+    current_standings = simulator.get_current_standings()
+
+    # Format teams data
+    teams_data = []
+    for team_name, match_record, map_record in current_standings:
+        team = teams[team_name]
+
+        # Parse match record
+        match_parts = match_record.split('-')
+        match_wins = int(match_parts[0])
+        match_losses = int(match_parts[1])
+
+        # Parse map record
+        map_parts = map_record.split('-')
+        map_wins = int(map_parts[0])
+        map_losses = int(map_parts[1])
+
+        teams_data.append({
+            'name': team_name,
+            'match_wins': match_wins,
+            'match_losses': match_losses,
+            'map_wins': map_wins,
+            'map_losses': map_losses,
+            'match_record': match_record,
+            'map_record': map_record,
+            'elo_rating': team.elo_rating
+        })
+
+    return jsonify({
+        'status': 'success',
+        'message': 'Baseline probabilities recomputed',
+        'probabilities': probabilities,
+        'teams': teams_data,
+        'simulation_time': baseline_simulation_time,
+        'iterations': Config.NUM_SIMULATIONS
     })
 
 

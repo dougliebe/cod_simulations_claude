@@ -16,6 +16,7 @@ class App {
 
         this.submitBtn = document.getElementById('submit-btn');
         this.resetBtn = document.getElementById('reset-btn');
+        this.recomputeBaselineBtn = document.getElementById('recompute-baseline-btn');
         this.errorMessage = document.getElementById('error-message');
     }
 
@@ -68,6 +69,11 @@ class App {
         // Reset button
         this.resetBtn.addEventListener('click', () => {
             this.handleReset();
+        });
+
+        // Recompute baseline button
+        this.recomputeBaselineBtn.addEventListener('click', () => {
+            this.handleRecomputeBaseline();
         });
 
         // Keyboard shortcuts
@@ -185,6 +191,50 @@ class App {
             // Reset state
             this.state.isSimulating = false;
             this.resetBtn.disabled = false;
+            this.table.showLoading(false);
+        }
+    }
+
+    /**
+     * Handle recompute baseline button click
+     */
+    async handleRecomputeBaseline() {
+        if (this.state.isSimulating) {
+            return;
+        }
+
+        try {
+            // Clear any errors
+            this.hideError();
+
+            // Set simulating state
+            this.state.isSimulating = true;
+            this.recomputeBaselineBtn.disabled = true;
+            this.recomputeBaselineBtn.textContent = 'Computing...';
+            this.table.showLoading(true);
+
+            // Call recompute baseline API
+            const result = await SimulationAPI.recomputeBaseline();
+
+            // Update table with fresh baseline
+            if (result.teams) {
+                this.table.renderTable(result.teams, result.probabilities, 'standing');
+            } else {
+                this.table.updateTable(result.probabilities);
+            }
+            this.state.currentProbabilities = result.probabilities;
+
+            // Show simulation info with fresh timing
+            this.table.showSimulationInfo(result.simulation_time, result.iterations);
+
+            console.log(`Baseline recomputed in ${result.simulation_time}s`);
+        } catch (error) {
+            this.showError(`Recompute baseline failed: ${error.message}`);
+        } finally {
+            // Reset state
+            this.state.isSimulating = false;
+            this.recomputeBaselineBtn.disabled = false;
+            this.recomputeBaselineBtn.textContent = 'Recompute Baseline';
             this.table.showLoading(false);
         }
     }
