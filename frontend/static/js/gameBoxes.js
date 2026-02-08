@@ -17,208 +17,123 @@ class GameBoxes {
         // Clear existing boxes
         this.container.innerHTML = '';
 
-        // Render each match
+        // Render each match as a compact row
         upcomingMatches.forEach((match) => {
-            const gameBox = this.createGameBox(match);
-            this.container.appendChild(gameBox);
+            const matchRow = this.createMatchRow(match);
+            this.container.appendChild(matchRow);
         });
     }
 
     /**
-     * Create a game box element for a match
+     * Create a compact match row element with score buttons
      * @param {Object} match - Match object
-     * @returns {HTMLElement} Game box element
+     * @returns {HTMLElement} Match row element
      */
-    createGameBox(match) {
-        const box = document.createElement('div');
-        box.className = 'game-box';
-        box.dataset.matchId = match.id;
+    createMatchRow(match) {
+        const row = document.createElement('div');
+        row.className = 'match-row';
+        row.dataset.matchId = match.id;
 
-        // Match header with date
-        const header = document.createElement('div');
-        header.className = 'match-header';
+        // Match date
+        const dateDiv = document.createElement('div');
+        dateDiv.className = 'match-date';
         if (match.start_date) {
-            const dateSpan = document.createElement('span');
-            dateSpan.className = 'match-date';
-            dateSpan.textContent = this.formatDate(match.start_date);
-            header.appendChild(dateSpan);
+            dateDiv.textContent = this.formatDate(match.start_date);
         }
-        box.appendChild(header);
+        row.appendChild(dateDiv);
 
-        // Match teams container
-        const teamsContainer = document.createElement('div');
-        teamsContainer.className = 'match-teams';
+        // Team 1 info
+        const team1Info = document.createElement('div');
+        team1Info.className = 'team-info team1';
 
-        // Team 1
-        const team1Div = this.createTeamDiv(match.team1, match.id, 1);
-        teamsContainer.appendChild(team1Div);
-
-        // VS divider
-        const vsDiv = document.createElement('div');
-        vsDiv.className = 'vs';
-        vsDiv.textContent = 'vs';
-        teamsContainer.appendChild(vsDiv);
-
-        // Team 2
-        const team2Div = this.createTeamDiv(match.team2, match.id, 2);
-        teamsContainer.appendChild(team2Div);
-
-        box.appendChild(teamsContainer);
-
-        // Match footer with win probability and clear button
-        const footer = document.createElement('div');
-        footer.className = 'match-footer';
+        const team1Name = document.createElement('span');
+        team1Name.className = 'team-name';
+        team1Name.textContent = match.team1;
+        team1Info.appendChild(team1Name);
 
         if (match.win_probability_team1 !== undefined) {
-            const winProbSpan = document.createElement('span');
-            winProbSpan.className = 'win-prob';
-            winProbSpan.textContent = `Win prob: ${(match.win_probability_team1 * 100).toFixed(0)}% - ${((1 - match.win_probability_team1) * 100).toFixed(0)}%`;
-            footer.appendChild(winProbSpan);
+            const team1Prob = document.createElement('span');
+            team1Prob.className = 'win-prob';
+            team1Prob.textContent = `(${(match.win_probability_team1 * 100).toFixed(0)}%)`;
+            team1Info.appendChild(team1Prob);
         }
 
-        const clearBtn = document.createElement('button');
-        clearBtn.className = 'clear-btn';
-        clearBtn.textContent = 'Clear';
-        clearBtn.onclick = () => this.clearMatch(match.id);
-        footer.appendChild(clearBtn);
+        row.appendChild(team1Info);
 
-        box.appendChild(footer);
+        // Score buttons container
+        const buttonsDiv = document.createElement('div');
+        buttonsDiv.className = 'score-buttons';
 
-        return box;
+        const scores = ['3-0', '3-1', '3-2', '2-3', '1-3', '0-3'];
+        scores.forEach(score => {
+            const btn = document.createElement('button');
+            btn.className = 'score-btn';
+            btn.textContent = score;
+            btn.dataset.score = score;
+
+            btn.addEventListener('click', () => {
+                this.handleScoreButtonClick(match.id, btn);
+            });
+
+            buttonsDiv.appendChild(btn);
+        });
+
+        row.appendChild(buttonsDiv);
+
+        // Team 2 info
+        const team2Info = document.createElement('div');
+        team2Info.className = 'team-info team2';
+
+        if (match.win_probability_team1 !== undefined) {
+            const team2Prob = document.createElement('span');
+            team2Prob.className = 'win-prob';
+            team2Prob.textContent = `(${((1 - match.win_probability_team1) * 100).toFixed(0)}%)`;
+            team2Info.appendChild(team2Prob);
+        }
+
+        const team2Name = document.createElement('span');
+        team2Name.className = 'team-name';
+        team2Name.textContent = match.team2;
+        team2Info.appendChild(team2Name);
+
+        row.appendChild(team2Info);
+
+        return row;
     }
 
     /**
-     * Create a team div with name and score input
-     * @param {string} teamName - Team name
+     * Handle score button click
      * @param {string} matchId - Match ID
-     * @param {number} teamNumber - 1 or 2
-     * @returns {HTMLElement} Team div element
+     * @param {HTMLElement} buttonElement - Clicked button element
      */
-    createTeamDiv(teamName, matchId, teamNumber) {
-        const teamDiv = document.createElement('div');
-        teamDiv.className = `team team${teamNumber}`;
+    handleScoreButtonClick(matchId, buttonElement) {
+        const row = document.querySelector(`[data-match-id="${matchId}"]`);
+        const buttons = row.querySelectorAll('.score-btn');
+        const clickedScore = buttonElement.dataset.score;
 
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'team-name';
-        nameSpan.textContent = teamName;
-        teamDiv.appendChild(nameSpan);
+        // Check if button is already selected
+        const isSelected = buttonElement.classList.contains('selected');
 
-        const scoreInput = document.createElement('input');
-        scoreInput.type = 'number';
-        scoreInput.className = 'score-input';
-        scoreInput.min = '0';
-        scoreInput.max = '3';
-        scoreInput.placeholder = '-';
-        scoreInput.dataset.matchId = matchId;
-        scoreInput.dataset.team = `team${teamNumber}`;
+        if (isSelected) {
+            // Deselect: remove from adjusted matches (return to simulated state)
+            buttonElement.classList.remove('selected');
+            this.adjustedMatches.delete(matchId);
+            row.classList.remove('adjusted');
+        } else {
+            // Select: clear other buttons and select this one
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            buttonElement.classList.add('selected');
 
-        // Add input event listener
-        scoreInput.addEventListener('input', (e) => {
-            this.handleScoreInput(matchId, e.target);
-        });
+            // Parse score (e.g., "3-1" -> team1_score: 3, team2_score: 1)
+            const [team1Score, team2Score] = clickedScore.split('-').map(Number);
 
-        // Add blur event listener for validation
-        scoreInput.addEventListener('blur', (e) => {
-            this.validateMatch(matchId);
-        });
-
-        teamDiv.appendChild(scoreInput);
-
-        return teamDiv;
-    }
-
-    /**
-     * Handle score input change
-     * @param {string} matchId - Match ID
-     * @param {HTMLElement} inputElement - Input element
-     */
-    handleScoreInput(matchId, inputElement) {
-        const box = document.querySelector(`[data-match-id="${matchId}"]`);
-        const inputs = box.querySelectorAll('.score-input');
-        const team1Input = inputs[0];
-        const team2Input = inputs[1];
-
-        const team1Score = team1Input.value === '' ? null : parseInt(team1Input.value);
-        const team2Score = team2Input.value === '' ? null : parseInt(team2Input.value);
-
-        // Update adjusted matches map
-        if (team1Score !== null || team2Score !== null) {
             this.adjustedMatches.set(matchId, {
                 team1_score: team1Score,
                 team2_score: team2Score
             });
 
-            // Highlight box as adjusted
-            box.classList.add('adjusted');
-        } else {
-            this.adjustedMatches.delete(matchId);
-            box.classList.remove('adjusted');
+            row.classList.add('adjusted');
         }
-
-        // Clear any previous error
-        box.classList.remove('invalid');
-    }
-
-    /**
-     * Validate a match's scores
-     * @param {string} matchId - Match ID
-     * @returns {boolean} True if valid
-     */
-    validateMatch(matchId) {
-        const box = document.querySelector(`[data-match-id="${matchId}"]`);
-        const inputs = box.querySelectorAll('.score-input');
-        const team1Score = inputs[0].value === '' ? null : parseInt(inputs[0].value);
-        const team2Score = inputs[1].value === '' ? null : parseInt(inputs[1].value);
-
-        // If both are empty, it's valid (no adjustment)
-        if (team1Score === null && team2Score === null) {
-            box.classList.remove('invalid');
-            return true;
-        }
-
-        // If only one is filled, it's invalid
-        if (team1Score === null || team2Score === null) {
-            box.classList.add('invalid');
-            return false;
-        }
-
-        // Scores must be 0-3
-        if (team1Score < 0 || team1Score > 3 || team2Score < 0 || team2Score > 3) {
-            box.classList.add('invalid');
-            return false;
-        }
-
-        // Valid best-of-5: one team must have exactly 3
-        if (team1Score !== 3 && team2Score !== 3) {
-            box.classList.add('invalid');
-            return false;
-        }
-
-        // Both can't have 3
-        if (team1Score === 3 && team2Score === 3) {
-            box.classList.add('invalid');
-            return false;
-        }
-
-        // Valid
-        box.classList.remove('invalid');
-        return true;
-    }
-
-    /**
-     * Validate all matches
-     * @returns {boolean} True if all valid
-     */
-    validateAllMatches() {
-        let allValid = true;
-
-        this.adjustedMatches.forEach((scores, matchId) => {
-            if (!this.validateMatch(matchId)) {
-                allValid = false;
-            }
-        });
-
-        return allValid;
     }
 
     /**
@@ -226,16 +141,12 @@ class GameBoxes {
      * @param {string} matchId - Match ID
      */
     clearMatch(matchId) {
-        const box = document.querySelector(`[data-match-id="${matchId}"]`);
-        const inputs = box.querySelectorAll('.score-input');
+        const row = document.querySelector(`[data-match-id="${matchId}"]`);
+        const buttons = row.querySelectorAll('.score-btn');
 
-        inputs.forEach(input => {
-            input.value = '';
-        });
-
+        buttons.forEach(btn => btn.classList.remove('selected'));
         this.adjustedMatches.delete(matchId);
-        box.classList.remove('adjusted');
-        box.classList.remove('invalid');
+        row.classList.remove('adjusted');
     }
 
     /**
@@ -244,14 +155,11 @@ class GameBoxes {
     clearAllMatches() {
         this.adjustedMatches.clear();
 
-        const boxes = this.container.querySelectorAll('.game-box');
-        boxes.forEach(box => {
-            const inputs = box.querySelectorAll('.score-input');
-            inputs.forEach(input => {
-                input.value = '';
-            });
-            box.classList.remove('adjusted');
-            box.classList.remove('invalid');
+        const rows = this.container.querySelectorAll('.match-row');
+        rows.forEach(row => {
+            const buttons = row.querySelectorAll('.score-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            row.classList.remove('adjusted');
         });
     }
 

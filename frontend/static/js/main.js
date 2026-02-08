@@ -99,20 +99,14 @@ class App {
         }
 
         try {
-            // Validate all matches
-            if (!this.gameBoxes.validateAllMatches()) {
-                this.showError('Invalid scores detected. Please ensure all adjusted matches have valid best-of-5 scores (one team with exactly 3 wins).');
-                return;
-            }
-
-            // Get adjusted matches
+            // Get adjusted matches (buttons always produce valid scores)
             const adjustedMatches = this.gameBoxes.getAdjustedMatches(
                 this.state.initialData.upcoming_matches
             );
 
             // If no adjustments, show message
             if (adjustedMatches.length === 0) {
-                this.showError('No match scores adjusted. Set some scores and try again.');
+                this.showError('No match scores selected. Click a score button and try again.');
                 return;
             }
 
