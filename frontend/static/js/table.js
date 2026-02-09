@@ -44,58 +44,35 @@ class ProbabilityTable {
     }
 
     /**
-     * Sort teams by current standing
-     * @param {Array} teams - Array of team objects
-     * @param {Object} probabilities - Probability data for each team
-     * @returns {Array} Sorted teams
+     * Calculate weighted average placement for a team
+     * @param {Object} probs - Team's seed probabilities (seed_1, seed_2, ..., seed_12)
+     * @returns {number} Weighted average placement (lower is better)
      */
-    sortTeamsByStanding(teams, probabilities) {
-        return teams.sort((a, b) => {
-            // Sort by match record first
-            const aMatchWinPct = a.match_wins / (a.match_wins + a.match_losses) || 0;
-            const bMatchWinPct = b.match_wins / (b.match_wins + b.match_losses) || 0;
-
-            if (aMatchWinPct !== bMatchWinPct) {
-                return bMatchWinPct - aMatchWinPct;
-            }
-
-            // If tied on match record, sort by map differential
-            const aMapDiff = a.map_wins - a.map_losses;
-            const bMapDiff = b.map_wins - b.map_losses;
-
-            return bMapDiff - aMapDiff;
-        });
+    calculateWeightedAvgPlacement(probs) {
+        let weightedSum = 0;
+        for (let seed = 1; seed <= 12; seed++) {
+            const prob = probs[`seed_${seed}`] || 0;
+            weightedSum += seed * prob;
+        }
+        return weightedSum;
     }
 
     /**
-     * Sort teams by bracket probability (top 6 %)
+     * Sort teams by weighted average placement
      * @param {Array} teams - Array of team objects
      * @param {Object} probabilities - Probability data for each team
      * @returns {Array} Sorted teams
      */
-    sortTeamsByBracketProb(teams, probabilities) {
+    sortTeamsByWeightedAvgPlacement(teams, probabilities) {
         return teams.sort((a, b) => {
-            // Sort by bracket probability (make_bracket)
-            const aProbBracket = probabilities[a.name]?.make_bracket || 0;
-            const bProbBracket = probabilities[b.name]?.make_bracket || 0;
+            const aProbs = probabilities[a.name];
+            const bProbs = probabilities[b.name];
 
-            if (aProbBracket !== bProbBracket) {
-                return bProbBracket - aProbBracket;
-            }
+            const aWeightedAvg = this.calculateWeightedAvgPlacement(aProbs);
+            const bWeightedAvg = this.calculateWeightedAvgPlacement(bProbs);
 
-            // If tied on bracket prob, sort by play-in probability
-            const aProbPlayIn = probabilities[a.name]?.make_play_ins || 0;
-            const bProbPlayIn = probabilities[b.name]?.make_play_ins || 0;
-
-            if (aProbPlayIn !== bProbPlayIn) {
-                return bProbPlayIn - aProbPlayIn;
-            }
-
-            // If still tied, sort by current match record
-            const aMatchWinPct = a.match_wins / (a.match_wins + a.match_losses) || 0;
-            const bMatchWinPct = b.match_wins / (b.match_wins + b.match_losses) || 0;
-
-            return bMatchWinPct - aMatchWinPct;
+            // Lower weighted average = better expected placement
+            return aWeightedAvg - bWeightedAvg;
         });
     }
 
@@ -103,16 +80,10 @@ class ProbabilityTable {
      * Render the full probability table
      * @param {Array} teams - Array of team objects
      * @param {Object} probabilities - Probability data for each team
-     * @param {string} sortMode - Sort mode: 'standing' or 'bracket' (default: 'standing')
      */
-    renderTable(teams, probabilities, sortMode = 'standing') {
-        // Sort teams based on mode
-        let sortedTeams;
-        if (sortMode === 'bracket') {
-            sortedTeams = this.sortTeamsByBracketProb([...teams], probabilities);
-        } else {
-            sortedTeams = this.sortTeamsByStanding([...teams], probabilities);
-        }
+    renderTable(teams, probabilities) {
+        // Sort teams by weighted average placement
+        const sortedTeams = this.sortTeamsByWeightedAvgPlacement([...teams], probabilities);
 
         // Clear existing rows
         this.tableBody.innerHTML = '';
@@ -221,24 +192,24 @@ class ProbabilityTable {
 
     /**
      * Update team records (match and map records) and probabilities
-     * Re-renders the entire table sorted by bracket probability
+     * Re-renders the entire table sorted by weighted average placement
      * @param {Array} teams - Array of team objects with updated records
      * @param {Object} probabilities - Updated probability data
      */
     updateTableWithTeams(teams, probabilities) {
-        // Re-render entire table sorted by bracket probability
-        this.renderTable(teams, probabilities, 'bracket');
+        // Re-render entire table sorted by weighted average placement
+        this.renderTable(teams, probabilities);
     }
 
     /**
      * Reset table to baseline with teams data
-     * Re-renders the entire table sorted by current standing
+     * Re-renders the entire table sorted by weighted average placement
      * @param {Array} teams - Array of team objects
      * @param {Object} probabilities - Baseline probability data
      */
     resetTableWithTeams(teams, probabilities) {
-        // Re-render entire table sorted by current standing
-        this.renderTable(teams, probabilities, 'standing');
+        // Re-render entire table sorted by weighted average placement
+        this.renderTable(teams, probabilities);
     }
 
     /**

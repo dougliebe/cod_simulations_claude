@@ -200,7 +200,7 @@ section {
     flex-direction: column;
     gap: 8px;
     margin-bottom: 30px;
-    max-width: 1200px;
+    max-width: 920px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -209,8 +209,8 @@ section {
 .match-row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
+    gap: 0;
+    padding: 12px 0;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 6px;
@@ -233,8 +233,10 @@ section {
 .match-date {
     font-size: 0.85rem;
     color: #8a94a6;
-    min-width: 60px;
+    width: 120px;
     flex-shrink: 0;
+    padding: 0 8px;
+    text-align: left;
 }
 
 /* Team Info */
@@ -242,7 +244,10 @@ section {
     display: flex;
     align-items: center;
     gap: 6px;
-    min-width: 140px;
+    width: 200px;
+    flex-shrink: 0;
+    padding: 0 8px;
+    overflow: hidden;
 }
 
 .team-info.team1 {
@@ -261,20 +266,26 @@ section {
     font-weight: 600;
     color: #ffffff;
     font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .win-prob {
     font-size: 0.85rem;
     color: #8a94a6;
     font-weight: 500;
+    flex-shrink: 0;
 }
 
 /* Score Buttons Container */
 .score-buttons {
     display: flex;
     gap: 6px;
-    flex: 1;
+    width: 400px;
+    flex-shrink: 0;
     justify-content: center;
+    padding: 0 8px;
 }
 
 /* Individual Score Button */

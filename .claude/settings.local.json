@@ -4,7 +4,27 @@
       "Bash(git init:*)",
       "Bash(pip install:*)",
       "Bash(python -m pytest:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(pytest:*)",
+      "Bash(gh issue create:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd interactive frontend for CoD seeding simulation\n\nBuild complete web interface for exploring playoff seeding scenarios:\n- Probability table showing playoff/seeding percentages for all teams\n- Interactive game boxes with score inputs for upcoming matches\n- Real-time simulation triggered by user score adjustments\n- Professional dark-themed UI with color-coded probabilities\n\nFrontend Components:\n- HTML two-section layout \\(table top, games bottom\\)\n- JavaScript API client for Flask backend communication\n- Table renderer with rank highlighting and probability color coding\n- Game box system with best-of-5 score validation\n- Main app coordinator with state management\n\nFeatures:\n- Responsive design for mobile/tablet/desktop\n- Loading states with animated spinner\n- Error handling and inline validation\n- Visual feedback \\(blue borders for adjusted games, red for invalid\\)\n- Keyboard shortcuts \\(Ctrl+Enter to simulate, Escape to reset\\)\n\nAlso includes Flask app.py with CORS support and comprehensive API tests.\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(gh issue view:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd comprehensive README documentation\n\nCreate detailed README.md with:\n- Project overview and feature highlights\n- Quick start installation and usage instructions\n- API endpoint documentation with examples\n- Data format specifications\n- Technical architecture details\n- Performance metrics and benchmarks\n- Complete project structure\n- Development and debugging guides\n\nIncludes badges, code examples, and clear sections for both users\nand developers.\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd development log documenting project journey\n\nCreate LOG.md chronicling the complete development process:\n- Timestamped entry for 2026-02-07\n- Detailed phase-by-phase development breakdown \\(Phases 1-5\\)\n- Key decisions and architecture choices documented\n- Performance metrics and test results for each phase\n- Challenge highlights and solutions\n- Summary statistics \\(code metrics, performance, features\\)\n- Future enhancement ideas for reference\n\nProvides historical context for project evolution, distinct from\nREADME which focuses on current state and usage.\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(gh issue close:*)",
+      "Bash(git checkout:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(curl:*)",
+      "Bash(time curl -s http://localhost:5000/api/initial-state)",
+      "Bash(gh pr create:*)",
+      "Bash(git pull:*)",
+      "Bash(git restore:*)"
     ]
   }
 }

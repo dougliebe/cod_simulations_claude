@@ -14,8 +14,14 @@ class App {
         this.table = new ProbabilityTable();
         this.gameBoxes = new GameBoxes();
 
+        // Bottom buttons
         this.submitBtn = document.getElementById('submit-btn');
         this.resetBtn = document.getElementById('reset-btn');
+
+        // Top buttons
+        this.submitBtnTop = document.getElementById('submit-btn-top');
+        this.resetBtnTop = document.getElementById('reset-btn-top');
+
         this.recomputeBaselineBtn = document.getElementById('recompute-baseline-btn');
         this.errorMessage = document.getElementById('error-message');
     }
@@ -61,13 +67,23 @@ class App {
      * Attach event listeners to UI elements
      */
     attachEventListeners() {
-        // Submit button
+        // Bottom submit button
         this.submitBtn.addEventListener('click', () => {
             this.handleSubmit();
         });
 
-        // Reset button
+        // Bottom reset button
         this.resetBtn.addEventListener('click', () => {
+            this.handleReset();
+        });
+
+        // Top submit button
+        this.submitBtnTop.addEventListener('click', () => {
+            this.handleSubmit();
+        });
+
+        // Top reset button
+        this.resetBtnTop.addEventListener('click', () => {
             this.handleReset();
         });
 
@@ -115,8 +131,13 @@ class App {
 
             // Set simulating state
             this.state.isSimulating = true;
+
+            // Disable and update both button sets
             this.submitBtn.disabled = true;
             this.submitBtn.textContent = 'Simulating...';
+            this.submitBtnTop.disabled = true;
+            this.submitBtnTop.textContent = 'Simulating...';
+
             this.table.showLoading(true);
 
             // Call API
@@ -140,8 +161,13 @@ class App {
         } finally {
             // Reset state
             this.state.isSimulating = false;
+
+            // Re-enable and restore text for both button sets
             this.submitBtn.disabled = false;
             this.submitBtn.textContent = 'Simulate with Adjusted Scores';
+            this.submitBtnTop.disabled = false;
+            this.submitBtnTop.textContent = 'Simulate with Adjusted Scores';
+
             this.table.showLoading(false);
         }
     }
@@ -163,7 +189,11 @@ class App {
 
             // Set simulating state
             this.state.isSimulating = true;
+
+            // Disable both reset buttons
             this.resetBtn.disabled = true;
+            this.resetBtnTop.disabled = true;
+
             this.table.showLoading(true);
 
             // Call reset API
@@ -184,7 +214,11 @@ class App {
         } finally {
             // Reset state
             this.state.isSimulating = false;
+
+            // Re-enable both reset buttons
             this.resetBtn.disabled = false;
+            this.resetBtnTop.disabled = false;
+
             this.table.showLoading(false);
         }
     }

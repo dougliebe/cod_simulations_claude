@@ -262,6 +262,195 @@ for opp in opponents:
 
 ---
 
+## 2026-02-08 (Evening) - Performance Optimization & UI Redesign
+
+### Phase 1: Massive Performance Optimization (11x Speedup)
+**Duration:** ~3 hours
+**Branch:** `performance-optimizations`
+**Test Results:** 92/92 tests passing
+
+**Problem:**
+- Baseline: 1,000 simulations in 0.714s (~1,400 sims/sec)
+- Target: 10,000 simulations in <2 seconds (5,000+ sims/sec required)
+- User requested: 10k sims in <2s to enable higher precision
+
+**Optimizations Implemented:**
+
+1. **Eliminated Deepcopy (2.2x speedup)**
+   - Replaced `copy.deepcopy(self.base_matches)` with list comprehension
+   - Created fresh Match objects instead of deep copying entire object graph
+   - Deepcopy was consuming 77% of runtime (2.13s out of 2.75s)
+   - Result: 1,000 sims reduced from 0.714s to 0.325s
+
+2. **Cached ELO Calculations (1.3x speedup)**
+   - Moved `calculate_win_probability()` outside map simulation loop
+   - Calculate once per match instead of 3-5 times per map
+   - Simple optimization but significant impact
+   - Result: Additional 30% improvement on top of deepcopy fix
+
+3. **Multiprocessing Parallelization (3.8x speedup)**
+   - Added `multiprocessing.Pool` for parallel simulation
+   - Each Monte Carlo iteration is completely independent (perfect parallelization)
+   - Split work across CPU cores (up to 8 workers)
+   - Implemented lazy initialization to handle Windows spawn model
+   - Default: parallel mode for ≥500 iterations, serial for smaller runs
+
+**Results Achieved:**
+| Iterations | Time | Rate | Speedup vs Baseline |
+|------------|------|------|---------------------|
+| 1,000 | 0.197s | 5,074 sims/sec | 3.6x |
+| 5,000 | 0.324s | 15,427 sims/sec | 11.0x |
+| 10,000 | 0.551s | 18,133 sims/sec | **13.0x** |
+
+**Target: Exceeded by 3.6x** (0.551s vs 2s target) ✅
+
+**New Files Created:**
+- `scripts/profile_simulation.py` - cProfile-based performance profiling
+- `scripts/benchmark_comparison.py` - Serial vs parallel comparison tool
+
+**Commits:**
+- `b60fb2a` - Optimize simulation performance: 11x speedup achieved
+- `eee8156` - Fix Windows multiprocessing issue with Flask debug mode
+
+**Technical Challenges:**
+- Windows multiprocessing spawn model caused Flask debug mode infinite loops
+- Solution: Lazy initialization of baseline probabilities on first API call
+- Workers import app.py but don't trigger baseline computation
+
+### Phase 2: Increased Precision & User Experience
+**Duration:** ~1 hour
+**Test Results:** 92/92 tests passing
+
+**Changes:**
+
+1. **Increased Default Simulations (10x precision)**
+   - Changed `NUM_SIMULATIONS` from 1,000 to 10,000
+   - 10x more Monte Carlo iterations for statistical precision
+   - Still completes in ~0.5-0.6 seconds (thanks to optimization)
+   - More accurate probability distributions
+
+2. **Recompute Baseline Button**
+   - Added button below simulation timing display
+   - Forces fresh baseline computation with new timing
+   - Allows viewing timing variance without server restart
+   - Created new `/api/recompute-baseline` POST endpoint
+   - Button text changes to "Computing..." during execution
+
+3. **Persistent Simulation Stats**
+   - Removed auto-hide timeout (was hiding after 5 seconds)
+   - Stats remain visible below probability table
+   - Shows iteration count with comma formatting (10,000 vs 10000)
+   - Format: "Simulation completed in 0.543s (10,000 iterations)"
+
+**Commits:**
+- `f431eb9` - Increase simulation count to 10k and persist simulation stats
+- `f532580` - Add recompute baseline button with fresh timing
+
+**Pull Request:**
+- PR #11: "Performance Optimization: 11x speedup + 10k simulations"
+- Merged to `master` after approval
+
+### Phase 3: UI Redesign - Compact Button-Based Layout
+**Duration:** ~2 hours
+**Test Results:** Manual testing, all functionality verified
+
+**Problem with Old UI:**
+- Text input fields required keyboard (not mobile-friendly)
+- Grid of tall card-based layout consumed excessive vertical space
+- Manual typing slower than clicking
+- Input validation required (could enter invalid scores temporarily)
+- ~150px height per match card
+
+**Solution - Compact Row Layout:**
+
+**New Layout:** `[Date] [Team1] (45%) [3-0] [3-1] [3-2] [2-3] [1-3] [0-3] (55%) [Team2]`
+
+**Key Features:**
+- **6 score buttons per match** representing all valid best-of-5 outcomes
+- **Click to select, click again to deselect** (intuitive interaction)
+- **Color-coded buttons** for visual clarity:
+  - Green (Team 1 wins): 3-0, 3-1, 3-2
+  - Orange (Team 2 wins): 2-3, 1-3, 0-3
+  - Blue when selected
+- **Win probabilities inline** with team names
+- **Touch-friendly sizing** (36px+ minimum tap targets)
+- **~48px height per row** (75% space reduction)
+
+**Implementation Details:**
+
+1. **JavaScript Rewrite (`gameBoxes.js` - 209 lines)**
+   - Completely rewrote `createGameBox()` as `createMatchRow()`
+   - Removed all validation methods (buttons always produce valid scores)
+   - New `handleScoreButtonClick()` for selection/deselection logic
+   - Updated `clearMatch()` and `clearAllMatches()` for button-based system
+   - Kept `getAdjustedMatches()` unchanged (same API format)
+   - **Net: -91 lines of code** (simpler, more maintainable)
+
+2. **CSS Redesign (`styles.css`)**
+   - Removed grid-based card layout (~145 lines)
+   - Added compact flexbox row layout (~160 lines)
+   - Color-coded button states with smooth hover effects
+   - Mobile responsive design (buttons stack on small screens)
+   - Touch-friendly tap targets with visual feedback
+
+3. **Main App Updates (`main.js`)**
+   - Removed `validateAllMatches()` call (no longer needed)
+   - Updated error message: "Click a score button and try again"
+   - Simplified submit logic
+
+4. **HTML Updates (`index.html`)**
+   - Updated instructions: "Click a score button to predict a match outcome..."
+
+**Benefits Achieved:**
+- 📊 **75% reduction in vertical space** (48px vs 150px per match)
+- ⚡ **Faster interaction:** 1 click vs 2 types + Tab key
+- 📱 **Mobile-friendly:** Touch targets instead of keyboard input
+- ✅ **No invalid input:** Buttons enforce validity by design
+- 👀 **More scannable:** Table-like rows vs grid of cards
+- 🎯 **Better UX:** Visual color coding aids decision making
+
+**Code Impact:**
+- 4 files changed
+- 230 insertions, 289 deletions
+- **Net: -59 lines of code**
+- Simpler validation logic
+- More maintainable button-based system
+
+**Commit:**
+- `06a802f` - Redesign game outcome UI with compact button-based layout
+
+**User Feedback Integration:**
+- User specifically requested button-based layout with this format
+- Implemented exactly as specified: Date, Team1, buttons, Team2
+- Deselection support (return to simulated state)
+
+---
+
+## Updated Summary Statistics (as of 2026-02-08 Evening)
+
+**Code Metrics:**
+- Total files: ~28
+- Lines of Python code: ~2,500+
+- Lines of JavaScript: ~700+ (reduced via button UI)
+- Lines of CSS: ~600+
+- Test coverage: 92 tests across 6 test files
+
+**Performance:**
+- Simulation speed: **18,133 sims/second** (13x faster than original)
+- API response time: <1 second (10,000 iterations)
+- Test suite runtime: <5 seconds (all 92 tests)
+
+**Features Delivered (Added):**
+- ✅ Multiprocessing parallelization (8-core support)
+- ✅ 10,000 simulation precision (10x more accurate)
+- ✅ Recompute baseline button
+- ✅ Persistent simulation stats display
+- ✅ Compact button-based match outcome UI
+- ✅ Mobile-friendly touch targets
+- ✅ Color-coded score buttons
+
+---
+
 ## Future Enhancement Ideas
 
 Potential improvements for future development:
