@@ -12,11 +12,11 @@ start_date,team1_id,team2_id,team1_score,team2_score
 2026-03-14T22:00:00+00:00,Los Angeles Thieves,Cloud9 New York,NA,NA
 2026-03-14T23:30:00+00:00,Paris Gentle Mates,Boston Breach,NA,NA
 2026-03-15T19:00:00+00:00,G2 Minnesota,Boston Breach,NA,NA
-2026-02-13T20:00:00+00:00,OpTic Texas,Boston Breach,NA,NA
+2026-02-13T20:00:00+00:00,OpTic Texas,Boston Breach,3,1
 2026-03-15T20:30:00+00:00,Vancouver Surge,Miami Heretics,NA,NA
-2026-02-13T21:30:00+00:00,Toronto KOI,Carolina Royal Ravens,NA,NA
+2026-02-13T21:30:00+00:00,Toronto KOI,Carolina Royal Ravens,0,3
 2026-03-15T22:00:00+00:00,Riyadh Falcons,Los Angeles Thieves,NA,NA
-2026-02-13T23:00:00+00:00,Miami Heretics,FaZe Vegas,NA,NA
+2026-02-13T23:00:00+00:00,Miami Heretics,FaZe Vegas,3,0
 2026-03-15T23:30:00+00:00,FaZe Vegas,Carolina Royal Ravens,NA,NA
 2026-03-20T19:00:00+00:00,Paris Gentle Mates,FaZe Vegas,NA,NA
 2026-02-14T20:00:00+00:00,Riyadh Falcons,Paris Gentle Mates,NA,NA
