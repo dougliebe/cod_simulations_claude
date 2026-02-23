@@ -3,9 +3,31 @@
  * Handles rendering and updating the probability table with team data
  */
 
+// Team name to logo filename (abbreviation) mapping
+const TEAM_LOGO_MAP = {
+    'Boston Breach': 'BOS',
+    'Carolina Royal Ravens': 'CAR',
+    'Cloud9 New York': 'C9NY',
+    'FaZe Vegas': 'LVF',
+    'G2 Minnesota': 'MIN',
+    'Los Angeles Thieves': 'LAT',
+    'Miami Heretics': 'MIA',
+    'OpTic Texas': 'TX',
+    'Paris Gentle Mates': 'PAR',
+    'Riyadh Falcons': 'RIY',
+    'Toronto KOI': 'KOI',
+    'Vancouver Surge': 'VAN'
+};
+
 class ProbabilityTable {
     constructor() {
         this.tableBody = document.getElementById('probability-table-body');
+    }
+
+    getLogoPath(teamName) {
+        const abbr = TEAM_LOGO_MAP[teamName];
+        if (!abbr) return null;
+        return `/static/logos/${abbr}.png`;
     }
 
     /**
@@ -166,12 +188,28 @@ class ProbabilityTable {
         // Clear existing rows
         this.tableBody.innerHTML = '';
 
-        // Render each team row
+        // Render each team row, inserting cutoff separators after rows 6 and 10
         sortedTeams.forEach((team, index) => {
             const rank = index + 1;
+            if (rank === 7 || rank === 11) {
+                this.tableBody.appendChild(this.createCutoffSeparatorRow());
+            }
             const row = this.createTeamRow(team, rank, probabilities[team.name], scales);
             this.tableBody.appendChild(row);
         });
+    }
+
+    /**
+     * Create a full-width separator row for dashed cutoff lines (avoids breaks at cell boundaries)
+     * @returns {HTMLElement} Table row element
+     */
+    createCutoffSeparatorRow() {
+        const row = document.createElement('tr');
+        row.className = 'cutoff-separator';
+        const cell = document.createElement('td');
+        cell.colSpan = 18;
+        row.appendChild(cell);
+        return row;
     }
 
     /**
@@ -192,10 +230,21 @@ class ProbabilityTable {
         rankCell.className = 'rank-cell numeric-cell';
         row.appendChild(rankCell);
 
-        // Team name
+        // Team name with logo
         const nameCell = document.createElement('td');
-        nameCell.textContent = team.name;
         nameCell.className = 'team-name-cell';
+        const logoPath = this.getLogoPath(team.name);
+        if (logoPath) {
+            const img = document.createElement('img');
+            img.src = logoPath;
+            img.alt = '';
+            img.className = 'team-logo';
+            nameCell.appendChild(img);
+        }
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = team.name;
+        nameSpan.className = 'team-name-text';
+        nameCell.appendChild(nameSpan);
         row.appendChild(nameCell);
 
         // Match record

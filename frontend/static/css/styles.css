@@ -124,10 +124,26 @@ section {
     background-color: rgba(0, 0, 0, 0.03);
 }
 
-/* Cutoff lines: dashed between 6-7 (bracket) and 10-11 (play-in) */
-#probability-table tbody tr:nth-child(6) td,
-#probability-table tbody tr:nth-child(10) td {
-    border-bottom: 2px dashed #475569;
+/* Separator rows for cutoff lines - line sits flush below previous row */
+#probability-table tbody tr.cutoff-separator td {
+    height: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-top: 2px dashed #475569;
+    vertical-align: top;
+    line-height: 0;
+    font-size: 0;
+    overflow: hidden;
+}
+
+/* Vertical cutoff lines: dashed between Seed 6-7 and Seed 10-11 */
+#probability-table th:nth-child(13),
+#probability-table th:nth-child(17),
+#probability-table td:nth-child(13),
+#probability-table td:nth-child(17) {
+    border-left: 2px dashed #475569;
+    padding-left: 10px;
 }
 
 /* Separator between Bracket % and Seed columns */
@@ -160,6 +176,22 @@ section {
     text-align: left !important;
     font-weight: 600;
     padding-left: 15px !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.team-name-cell .team-logo {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.team-name-cell .team-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Bracket Classes */

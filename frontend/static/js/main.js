@@ -23,6 +23,7 @@ class App {
         this.resetBtnTop = document.getElementById('reset-btn-top');
 
         this.recomputeBaselineBtn = document.getElementById('recompute-baseline-btn');
+        this.copyAsImageBtn = document.getElementById('copy-as-image-btn');
         this.errorMessage = document.getElementById('error-message');
     }
 
@@ -90,6 +91,11 @@ class App {
         // Recompute baseline button
         this.recomputeBaselineBtn.addEventListener('click', () => {
             this.handleRecomputeBaseline();
+        });
+
+        // Copy as image button
+        this.copyAsImageBtn.addEventListener('click', () => {
+            this.handleCopyAsImage();
         });
 
         // Keyboard shortcuts
@@ -264,6 +270,49 @@ class App {
             this.recomputeBaselineBtn.disabled = false;
             this.recomputeBaselineBtn.textContent = 'Recompute Baseline';
             this.table.showLoading(false);
+        }
+    }
+
+    /**
+     * Copy probability view (title + table + simulation info) as image to clipboard
+     */
+    async handleCopyAsImage() {
+        const element = document.getElementById('copyable-probability-view');
+        if (!element || typeof html2canvas === 'undefined') {
+            this.showError('Copy as image requires html2canvas. Please refresh the page.');
+            return;
+        }
+
+        const btn = this.copyAsImageBtn;
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Copying...';
+
+        try {
+            const canvas = await html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            });
+
+            const blob = await new Promise((resolve) => {
+                canvas.toBlob(resolve, 'image/png', 1.0);
+            });
+
+            await navigator.clipboard.write([
+                new ClipboardItem({ 'image/png': blob })
+            ]);
+
+            btn.textContent = 'Copied!';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }, 2000);
+        } catch (error) {
+            this.showError(`Copy failed: ${error.message}. Try a different browser or check clipboard permissions.`);
+            btn.textContent = originalText;
+            btn.disabled = false;
         }
     }
 
