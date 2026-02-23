@@ -11,8 +11,9 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    color: #e4e4e4;
+    font-size: 1.0625rem;
+    background: #e8e8e8;
+    color: #2d2d2d;
     line-height: 1.6;
     min-height: 100vh;
     padding: 20px;
@@ -25,32 +26,31 @@ body {
 
 /* Typography */
 h1 {
-    font-size: 2.5rem;
+    font-size: 2.75rem;
     font-weight: 700;
     margin-bottom: 10px;
     text-align: center;
-    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 h2 {
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 600;
     margin-bottom: 15px;
-    color: #ffffff;
+    color: #1e293b;
 }
 
 /* Sections */
 section {
-    background: rgba(255, 255, 255, 0.03);
+    background: #ffffff;
     border-radius: 12px;
     padding: 30px;
     margin-bottom: 30px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 #probability-section {
@@ -61,15 +61,15 @@ section {
 #loading-indicator {
     text-align: center;
     padding: 20px;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
 }
 
 #loading-indicator .spinner {
     display: inline-block;
     width: 40px;
     height: 40px;
-    border: 4px solid rgba(79, 172, 254, 0.3);
-    border-top-color: #4facfe;
+    border: 4px solid rgba(37, 99, 235, 0.2);
+    border-top-color: #2563eb;
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 10px;
@@ -88,14 +88,14 @@ section {
 #probability-table {
     width: 100%;
     border-collapse: collapse;
-    background: rgba(0, 0, 0, 0.2);
+    background: #ffffff;
     border-radius: 8px;
     overflow: hidden;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 #probability-table thead {
-    background: linear-gradient(135deg, #2d3561 0%, #1f2544 100%);
+    background: linear-gradient(135deg, #475569 0%, #334155 100%);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -106,14 +106,14 @@ section {
     text-align: center;
     font-weight: 600;
     color: #ffffff;
-    border-bottom: 2px solid rgba(79, 172, 254, 0.3);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
     white-space: nowrap;
 }
 
 #probability-table td {
     padding: 10px 8px;
     text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 #probability-table tbody tr {
@@ -121,13 +121,38 @@ section {
 }
 
 #probability-table tbody tr:hover {
-    background-color: rgba(79, 172, 254, 0.1);
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Cutoff lines: dashed between 6-7 (bracket) and 10-11 (play-in) */
+#probability-table tbody tr:nth-child(6) td,
+#probability-table tbody tr:nth-child(10) td {
+    border-bottom: 2px dashed #475569;
+}
+
+/* Separator between Bracket % and Seed columns */
+#probability-table th.seed-column-separator,
+#probability-table td.seed-column-separator {
+    border-left: 3px solid #ffffff;
+    padding-left: 10px;
+}
+
+/* Numeric cells - monospace font for numbers only */
+.numeric-cell {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+}
+
+/* Probability cells - white text with thick black outline (NWS-style) */
+#probability-table td.probability-cell {
+    color: white;
+    font-weight: bold;
+    text-shadow: 0px 2.5px 0.02px #000, 2.45px 0.53px 0.02px #000, 1.05px -2.28px 0.02px #000, -2px -1.5px 0.02px #000, -1.9px 1.63px 0.02px #000, 1.2px 2.2px 0.02px #000, 2.4px -0.7px 0.02px #000, -0.18px -2.5px 0.02px #000, -2.48px -0.38px 0.02px #000, -0.88px 2.35px 0.02px #000, 2.1px 1.35px 0.02px #000, 1.78px -1.75px 0.02px #000, -1.35px -2.1px 0.02px #000, -2.35px 0.88px 0.02px #000, 0.35px 2.48px 0.02px #000, 2.5px 0.2px 0.02px #000, 0.73px -2.4px 0.02px #000, -2.18px -1.2px 0.02px #000, -1.65px 1.88px 0.02px #000, 1.48px 2px 0.02px #000, 2.28px -1.03px 0.02px #000, -0.53px -2.45px 0.02px #000, -2.5px -0.03px 0.02px #000, -0.55px 2.45px 0.02px #000, 2.28px 1.05px 0.02px #000, 1.53px -2px 0.02px #000, -1.63px -1.9px 0.02px #000, -2.2px 1.18px 0.02px #000, 0.68px 2.4px 0.02px #000, 2.5px -0.15px 0.02px #000, 0.38px -2.48px 0.02px #000, -2.33px -0.9px 0.02px #000, -1.38px 2.1px 0.02px #000, 1.75px 1.8px 0.02px #000, 2.13px -1.33px 0.02px #000, -0.85px -2.35px 0.02px #000, -2.48px 0.33px 0.02px #000, -0.2px 2.5px 0.02px #000, 2.4px 0.73px 0.02px #000, 1.23px -2.18px 0.02px #000, -1.88px -1.68px 0.02px #000, -2.03px 1.48px 0.02px #000, 1px 2.3px 0.02px #000, 2.45px -0.5px 0.02px #000, 0.05px -2.5px 0.02px #000, -2.43px -0.58px 0.02px #000, -1.08px 2.25px 0.02px #000, 1.98px 1.53px 0.02px #000;
 }
 
 /* Rank Cell */
 .rank-cell {
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 0.8rem;
 }
 
 /* Team Name Cell */
@@ -140,40 +165,20 @@ section {
 /* Bracket Classes */
 .winners-bracket {
     /* Top 6 - Direct to Bracket (Blue) */
-    background-color: rgba(52, 152, 219, 0.15);
-    border-left: 4px solid #3498db;
+    background-color: rgba(59, 130, 246, 0.08);
+    border-left: 4px solid #3b82f6;
 }
 
 .play-in {
     /* Seeds 7-10 - Play-ins (Yellow) */
-    background-color: rgba(241, 196, 15, 0.1);
-    border-left: 4px solid #f1c40f;
+    background-color: rgba(234, 179, 8, 0.1);
+    border-left: 4px solid #eab308;
 }
 
 .eliminated {
     /* Seeds 11-12 - Eliminated (Red) */
-    background-color: rgba(231, 76, 60, 0.1);
-    border-left: 4px solid #e74c3c;
-}
-
-/* Probability Color Coding */
-.prob-high {
-    color: #2ecc71;
-    font-weight: 600;
-}
-
-.prob-medium {
-    color: #f39c12;
-    font-weight: 500;
-}
-
-.prob-low {
-    color: #95a5a6;
-}
-
-.prob-very-low {
-    color: #5a6470;
-    font-size: 0.85rem;
+    background-color: rgba(239, 68, 68, 0.08);
+    border-left: 4px solid #ef4444;
 }
 
 /* Simulation Info */
@@ -181,15 +186,15 @@ section {
     text-align: center;
     margin-top: 15px;
     padding: 10px;
-    background: rgba(52, 152, 219, 0.1);
+    background: rgba(59, 130, 246, 0.08);
     border-radius: 6px;
-    color: #4facfe;
-    font-size: 0.9rem;
+    color: #1d4ed8;
+    font-size: 1rem;
 }
 
 /* Games Section */
 .instructions {
-    color: #b0b0b0;
+    color: #64748b;
     margin-bottom: 20px;
     text-align: center;
 }
@@ -211,28 +216,28 @@ section {
     align-items: center;
     gap: 0;
     padding: 12px 0;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #f8fafc;
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 6px;
     transition: all 0.2s ease;
     min-height: 48px;
 }
 
 .match-row:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(79, 172, 254, 0.3);
+    background: #f1f5f9;
+    border-color: rgba(59, 130, 246, 0.4);
 }
 
 /* Adjusted state (user selected a score) */
 .match-row.adjusted {
-    background: rgba(79, 172, 254, 0.08);
-    border-color: #4facfe;
+    background: rgba(59, 130, 246, 0.08);
+    border-color: #3b82f6;
 }
 
 /* Match Date */
 .match-date {
-    font-size: 0.85rem;
-    color: #8a94a6;
+    font-size: 0.95rem;
+    color: #64748b;
     width: 120px;
     flex-shrink: 0;
     padding: 0 8px;
@@ -264,16 +269,16 @@ section {
 
 .team-name {
     font-weight: 600;
-    color: #ffffff;
-    font-size: 0.95rem;
+    color: #1e293b;
+    font-size: 1.05rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .win-prob {
-    font-size: 0.85rem;
-    color: #8a94a6;
+    font-size: 0.95rem;
+    color: #64748b;
     font-weight: 500;
     flex-shrink: 0;
 }
@@ -291,11 +296,11 @@ section {
 /* Individual Score Button */
 .score-btn {
     padding: 8px 14px;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-weight: 600;
-    color: #ffffff;
-    background: transparent;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: #334155;
+    background: #ffffff;
+    border: 2px solid rgba(0, 0, 0, 0.15);
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -306,8 +311,8 @@ section {
 
 /* Hover state */
 .score-btn:hover {
-    border-color: #4facfe;
-    background: rgba(79, 172, 254, 0.15);
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.06);
     transform: translateY(-1px);
 }
 
@@ -318,52 +323,54 @@ section {
 
 /* Selected state */
 .score-btn.selected {
-    background: #4facfe;
-    border-color: #4facfe;
+    background: #3b82f6;
+    border-color: #3b82f6;
     color: #ffffff;
-    box-shadow: 0 2px 8px rgba(79, 172, 254, 0.4);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
 }
 
 /* Left-side buttons (Team 1 favored) - subtle green tint */
 .score-btn[data-score="3-0"],
 .score-btn[data-score="3-1"],
 .score-btn[data-score="3-2"] {
-    border-color: rgba(46, 204, 113, 0.3);
+    border-color: rgba(34, 197, 94, 0.5);
 }
 
 .score-btn[data-score="3-0"]:hover,
 .score-btn[data-score="3-1"]:hover,
 .score-btn[data-score="3-2"]:hover {
-    border-color: #2ecc71;
-    background: rgba(46, 204, 113, 0.15);
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.08);
 }
 
 .score-btn[data-score="3-0"].selected,
 .score-btn[data-score="3-1"].selected,
 .score-btn[data-score="3-2"].selected {
-    background: #2ecc71;
-    border-color: #2ecc71;
+    background: #22c55e;
+    border-color: #22c55e;
+    color: #ffffff;
 }
 
 /* Right-side buttons (Team 2 favored) - subtle orange tint */
 .score-btn[data-score="2-3"],
 .score-btn[data-score="1-3"],
 .score-btn[data-score="0-3"] {
-    border-color: rgba(230, 126, 34, 0.3);
+    border-color: rgba(249, 115, 22, 0.5);
 }
 
 .score-btn[data-score="2-3"]:hover,
 .score-btn[data-score="1-3"]:hover,
 .score-btn[data-score="0-3"]:hover {
-    border-color: #e67e22;
-    background: rgba(230, 126, 34, 0.15);
+    border-color: #f97316;
+    background: rgba(249, 115, 22, 0.08);
 }
 
 .score-btn[data-score="2-3"].selected,
 .score-btn[data-score="1-3"].selected,
 .score-btn[data-score="0-3"].selected {
-    background: #e67e22;
-    border-color: #e67e22;
+    background: #f97316;
+    border-color: #f97316;
+    color: #ffffff;
 }
 
 /* Submit Section */
@@ -375,7 +382,7 @@ section {
 /* Buttons */
 .btn {
     padding: 14px 32px;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 600;
     border: none;
     border-radius: 8px;
@@ -386,13 +393,13 @@ section {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: #1a1a2e;
+    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+    color: #ffffff;
 }
 
 .btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
 }
 
 .btn-primary:disabled {
@@ -401,21 +408,21 @@ section {
 }
 
 .btn-secondary {
-    background: rgba(149, 165, 166, 0.3);
-    color: #ecf0f1;
-    border: 1px solid rgba(149, 165, 166, 0.5);
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
 }
 
 .btn-secondary:hover:not(:disabled) {
-    background: rgba(149, 165, 166, 0.4);
+    background: #e2e8f0;
     transform: translateY(-2px);
 }
 
 /* Error Message */
 .error {
-    background: rgba(231, 76, 60, 0.2);
-    border: 1px solid #e74c3c;
-    color: #e74c3c;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid #ef4444;
+    color: #dc2626;
     padding: 15px;
     border-radius: 8px;
     margin-top: 20px;
@@ -439,11 +446,11 @@ section {
     }
 
     h1 {
-        font-size: 1.8rem;
+        font-size: 2rem;
     }
 
     h2 {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
     }
 
     /* Match rows stack vertically on mobile */
@@ -471,11 +478,11 @@ section {
         flex: 1;
         min-width: 0;
         padding: 8px 6px;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
     }
 
     #probability-table {
-        font-size: 0.75rem;
+        font-size: 0.85rem;
     }
 
     #probability-table th,
@@ -490,21 +497,21 @@ section {
     }
 }
 
-/* Dark scrollbar */
+/* Light scrollbar */
 ::-webkit-scrollbar {
     width: 12px;
     height: 12px;
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
+    background: #e2e8f0;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(79, 172, 254, 0.3);
+    background: #94a3b8;
     border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(79, 172, 254, 0.5);
+    background: #64748b;
 }

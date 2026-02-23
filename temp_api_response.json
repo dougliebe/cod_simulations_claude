@@ -1,0 +1,929 @@
+{
+  "completed_matches": [
+    {
+      "id": "match_13",
+      "start_date": "2026-02-13T20:00:00+00:00",
+      "team1": "OpTic Texas",
+      "team1_score": 3,
+      "team2": "Boston Breach",
+      "team2_score": 1
+    },
+    {
+      "id": "match_15",
+      "start_date": "2026-02-13T21:30:00+00:00",
+      "team1": "Toronto KOI",
+      "team1_score": 0,
+      "team2": "Carolina Royal Ravens",
+      "team2_score": 3
+    },
+    {
+      "id": "match_17",
+      "start_date": "2026-02-13T23:00:00+00:00",
+      "team1": "Miami Heretics",
+      "team1_score": 3,
+      "team2": "FaZe Vegas",
+      "team2_score": 0
+    }
+  ],
+  "elo_ratings": {
+    "Boston Breach": 1500.0,
+    "Carolina Royal Ravens": 1500.0,
+    "Cloud9 New York": 1500.0,
+    "FaZe Vegas": 1500.0,
+    "G2 Minnesota": 1500.0,
+    "Los Angeles Thieves": 1500.0,
+    "Miami Heretics": 1500.0,
+    "OpTic Texas": 1500.0,
+    "Paris Gentle Mates": 1500.0,
+    "Riyadh Falcons": 1500.0,
+    "Toronto KOI": 1500.0,
+    "Vancouver Surge": 1500.0
+  },
+  "num_simulations": 10000,
+  "probabilities": {
+    "Boston Breach": {
+      "make_bracket": 0.3837,
+      "make_play_ins": 0.7616,
+      "seed_1": 0.0439,
+      "seed_10": 0.1058,
+      "seed_11": 0.113,
+      "seed_12": 0.1254,
+      "seed_2": 0.0547,
+      "seed_3": 0.0594,
+      "seed_4": 0.0683,
+      "seed_5": 0.0783,
+      "seed_6": 0.0791,
+      "seed_7": 0.0888,
+      "seed_8": 0.0898,
+      "seed_9": 0.0935
+    },
+    "Carolina Royal Ravens": {
+      "make_bracket": 0.6255,
+      "make_play_ins": 0.9072,
+      "seed_1": 0.1293,
+      "seed_10": 0.0601,
+      "seed_11": 0.0538,
+      "seed_12": 0.039,
+      "seed_2": 0.1137,
+      "seed_3": 0.1016,
+      "seed_4": 0.0984,
+      "seed_5": 0.0932,
+      "seed_6": 0.0893,
+      "seed_7": 0.0815,
+      "seed_8": 0.0712,
+      "seed_9": 0.0689
+    },
+    "Cloud9 New York": {
+      "make_bracket": 0.5046,
+      "make_play_ins": 0.826,
+      "seed_1": 0.0854,
+      "seed_10": 0.0823,
+      "seed_11": 0.0884,
+      "seed_12": 0.0856,
+      "seed_2": 0.0851,
+      "seed_3": 0.0819,
+      "seed_4": 0.0813,
+      "seed_5": 0.0877,
+      "seed_6": 0.0832,
+      "seed_7": 0.0832,
+      "seed_8": 0.0771,
+      "seed_9": 0.0788
+    },
+    "FaZe Vegas": {
+      "make_bracket": 0.3837,
+      "make_play_ins": 0.7524,
+      "seed_1": 0.043,
+      "seed_10": 0.1042,
+      "seed_11": 0.1185,
+      "seed_12": 0.1291,
+      "seed_2": 0.0536,
+      "seed_3": 0.0607,
+      "seed_4": 0.0723,
+      "seed_5": 0.0741,
+      "seed_6": 0.08,
+      "seed_7": 0.0818,
+      "seed_8": 0.0873,
+      "seed_9": 0.0954
+    },
+    "G2 Minnesota": {
+      "make_bracket": 0.4924,
+      "make_play_ins": 0.8335,
+      "seed_1": 0.0808,
+      "seed_10": 0.088,
+      "seed_11": 0.08,
+      "seed_12": 0.0865,
+      "seed_2": 0.0783,
+      "seed_3": 0.0859,
+      "seed_4": 0.0808,
+      "seed_5": 0.0807,
+      "seed_6": 0.0859,
+      "seed_7": 0.0814,
+      "seed_8": 0.086,
+      "seed_9": 0.0857
+    },
+    "Los Angeles Thieves": {
+      "make_bracket": 0.5016,
+      "make_play_ins": 0.836,
+      "seed_1": 0.0866,
+      "seed_10": 0.0795,
+      "seed_11": 0.0835,
+      "seed_12": 0.0805,
+      "seed_2": 0.0823,
+      "seed_3": 0.082,
+      "seed_4": 0.0836,
+      "seed_5": 0.0859,
+      "seed_6": 0.0812,
+      "seed_7": 0.0838,
+      "seed_8": 0.0818,
+      "seed_9": 0.0893
+    },
+    "Miami Heretics": {
+      "make_bracket": 0.6153,
+      "make_play_ins": 0.9099,
+      "seed_1": 0.1219,
+      "seed_10": 0.0624,
+      "seed_11": 0.0522,
+      "seed_12": 0.0379,
+      "seed_2": 0.1157,
+      "seed_3": 0.1116,
+      "seed_4": 0.095,
+      "seed_5": 0.0891,
+      "seed_6": 0.082,
+      "seed_7": 0.0828,
+      "seed_8": 0.081,
+      "seed_9": 0.0684
+    },
+    "OpTic Texas": {
+      "make_bracket": 0.6106,
+      "make_play_ins": 0.9035,
+      "seed_1": 0.1227,
+      "seed_10": 0.0633,
+      "seed_11": 0.0559,
+      "seed_12": 0.0406,
+      "seed_2": 0.1109,
+      "seed_3": 0.1036,
+      "seed_4": 0.0996,
+      "seed_5": 0.0887,
+      "seed_6": 0.0851,
+      "seed_7": 0.0793,
+      "seed_8": 0.0812,
+      "seed_9": 0.0691
+    },
+    "Paris Gentle Mates": {
+      "make_bracket": 0.5042,
+      "make_play_ins": 0.8429,
+      "seed_1": 0.0803,
+      "seed_10": 0.0828,
+      "seed_11": 0.0807,
+      "seed_12": 0.0764,
+      "seed_2": 0.0842,
+      "seed_3": 0.0845,
+      "seed_4": 0.086,
+      "seed_5": 0.0804,
+      "seed_6": 0.0888,
+      "seed_7": 0.0851,
+      "seed_8": 0.0832,
+      "seed_9": 0.0876
+    },
+    "Riyadh Falcons": {
+      "make_bracket": 0.4979,
+      "make_play_ins": 0.8348,
+      "seed_1": 0.0823,
+      "seed_10": 0.083,
+      "seed_11": 0.082,
+      "seed_12": 0.0832,
+      "seed_2": 0.0861,
+      "seed_3": 0.084,
+      "seed_4": 0.0775,
+      "seed_5": 0.0852,
+      "seed_6": 0.0828,
+      "seed_7": 0.0849,
+      "seed_8": 0.0865,
+      "seed_9": 0.0825
+    },
+    "Toronto KOI": {
+      "make_bracket": 0.3836,
+      "make_play_ins": 0.7577,
+      "seed_1": 0.0415,
+      "seed_10": 0.1019,
+      "seed_11": 0.1136,
+      "seed_12": 0.1287,
+      "seed_2": 0.0558,
+      "seed_3": 0.0608,
+      "seed_4": 0.0704,
+      "seed_5": 0.0746,
+      "seed_6": 0.0805,
+      "seed_7": 0.0812,
+      "seed_8": 0.0916,
+      "seed_9": 0.0994
+    },
+    "Vancouver Surge": {
+      "make_bracket": 0.4969,
+      "make_play_ins": 0.8345,
+      "seed_1": 0.0823,
+      "seed_10": 0.0867,
+      "seed_11": 0.0784,
+      "seed_12": 0.0871,
+      "seed_2": 0.0796,
+      "seed_3": 0.084,
+      "seed_4": 0.0868,
+      "seed_5": 0.0821,
+      "seed_6": 0.0821,
+      "seed_7": 0.0862,
+      "seed_8": 0.0833,
+      "seed_9": 0.0814
+    }
+  },
+  "simulation_time": 0.9198191165924072,
+  "teams": [
+    {
+      "elo_rating": 1500.0,
+      "map_losses": 0,
+      "map_record": "3-0",
+      "map_wins": 0,
+      "match_losses": 0,
+      "match_record": "1-0",
+      "match_wins": 0,
+      "name": "Carolina Royal Ravens"
+    },
+    {
+      "elo_rating": 1500.0,
+      "map_losses": 0,
+      "map_record": "3-0",
+      "map_wins": 0,
+      "match_losses": 0,
+      "match_record": "1-0",
+      "match_wins": 0,
+      "name": "Miami Heretics"
+    },
+    {
+      "elo_rating": 1500.0,
+      "map_losses": 0,
+      "map_record": "3-1",
+      "map_wins": 0,
+      "match_losses": 0,
+      "match_record": "1-0",
+      "match_wins": 0,
+      "name": "OpTic Texas"
+    },
+    {
+      "elo_rating": 1500.0,
+      "map_losses": 0,
+      "map_record": "1-3",
+      "map_wins": 0,
+      "match_losses": 0,
+      "match_record": "0-1",
+      "match_wins": 0,
+      "name": "Boston Breach"
+    },
+    {
+      "elo_rating": 1500.0,
+      "map_losses": 0,
+      "map_record": "0-3",
+      "map_wins": 0,
+      "match_losses": 0,
+      "match_record": "0-1",
+      "match_wins": 0,
+      "name": "FaZe Vegas"
+    },
+    {
+      "elo_rating": 1500.0,
+      "map_losses": 0,
+      "map_record": "0-3",
+      "map_wins": 0,
+      "match_losses": 0,
+      "match_record": "0-1",
+      "match_wins": 0,
+      "name": "Toronto KOI"
+    },
+    {
+      "elo_rating": 1500.0,
+      "map_losses": 0,
+      "map_record": "0-0",
+      "map_wins": 0,
+      "match_losses": 0,
+      "match_record": "0-0",
+      "match_wins": 0,
+      "name": "G2 Minnesota"
+    },
+    {
+      "elo_rating": 1500.0,
+      "map_losses": 0,
+      "map_record": "0-0",
+      "map_wins": 0,
+      "match_losses": 0,
+      "match_record": "0-0",
+      "match_wins": 0,
+      "name": "Cloud9 New York"
+    },
+    {
+      "elo_rating": 1500.0,
+      "map_losses": 0,
+      "map_record": "0-0",
+      "map_wins": 0,
+      "match_losses": 0,
+      "match_record": "0-0",
+      "match_wins": 0,
+      "name": "Vancouver Surge"
+    },
+    {
+      "elo_rating": 1500.0,
+      "map_losses": 0,
+      "map_record": "0-0",
+      "map_wins": 0,
+      "match_losses": 0,
+      "match_record": "0-0",
+      "match_wins": 0,
+      "name": "Los Angeles Thieves"
+    },
+    {
+      "elo_rating": 1500.0,
+      "map_losses": 0,
+      "map_record": "0-0",
+      "map_wins": 0,
+      "match_losses": 0,
+      "match_record": "0-0",
+      "match_wins": 0,
+      "name": "Riyadh Falcons"
+    },
+    {
+      "elo_rating": 1500.0,
+      "map_losses": 0,
+      "map_record": "0-0",
+      "map_wins": 0,
+      "match_losses": 0,
+      "match_record": "0-0",
+      "match_wins": 0,
+      "name": "Paris Gentle Mates"
+    }
+  ],
+  "upcoming_matches": [
+    {
+      "id": "match_0",
+      "start_date": "2026-03-08T00:30:00+00:00",
+      "team1": "Cloud9 New York",
+      "team1_score": null,
+      "team2": "Boston Breach",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_1",
+      "start_date": "2026-03-08T19:00:00+00:00",
+      "team1": "Miami Heretics",
+      "team1_score": null,
+      "team2": "Los Angeles Thieves",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_2",
+      "start_date": "2026-03-08T20:30:00+00:00",
+      "team1": "Toronto KOI",
+      "team1_score": null,
+      "team2": "Boston Breach",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_3",
+      "start_date": "2026-03-08T22:00:00+00:00",
+      "team1": "OpTic Texas",
+      "team1_score": null,
+      "team2": "Carolina Royal Ravens",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_4",
+      "start_date": "2026-03-08T23:30:00+00:00",
+      "team1": "Vancouver Surge",
+      "team1_score": null,
+      "team2": "Paris Gentle Mates",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_5",
+      "start_date": "2026-03-13T19:00:00+00:00",
+      "team1": "Toronto KOI",
+      "team1_score": null,
+      "team2": "Cloud9 New York",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_6",
+      "start_date": "2026-03-13T20:30:00+00:00",
+      "team1": "Riyadh Falcons",
+      "team1_score": null,
+      "team2": "Miami Heretics",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_7",
+      "start_date": "2026-03-13T22:00:00+00:00",
+      "team1": "Paris Gentle Mates",
+      "team1_score": null,
+      "team2": "OpTic Texas",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_8",
+      "start_date": "2026-03-14T19:00:00+00:00",
+      "team1": "G2 Minnesota",
+      "team1_score": null,
+      "team2": "Carolina Royal Ravens",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_9",
+      "start_date": "2026-03-14T20:30:00+00:00",
+      "team1": "Vancouver Surge",
+      "team1_score": null,
+      "team2": "Toronto KOI",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_10",
+      "start_date": "2026-03-14T22:00:00+00:00",
+      "team1": "Los Angeles Thieves",
+      "team1_score": null,
+      "team2": "Cloud9 New York",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_11",
+      "start_date": "2026-03-14T23:30:00+00:00",
+      "team1": "Paris Gentle Mates",
+      "team1_score": null,
+      "team2": "Boston Breach",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_12",
+      "start_date": "2026-03-15T19:00:00+00:00",
+      "team1": "G2 Minnesota",
+      "team1_score": null,
+      "team2": "Boston Breach",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_14",
+      "start_date": "2026-03-15T20:30:00+00:00",
+      "team1": "Vancouver Surge",
+      "team1_score": null,
+      "team2": "Miami Heretics",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_16",
+      "start_date": "2026-03-15T22:00:00+00:00",
+      "team1": "Riyadh Falcons",
+      "team1_score": null,
+      "team2": "Los Angeles Thieves",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_18",
+      "start_date": "2026-03-15T23:30:00+00:00",
+      "team1": "FaZe Vegas",
+      "team1_score": null,
+      "team2": "Carolina Royal Ravens",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_19",
+      "start_date": "2026-03-20T19:00:00+00:00",
+      "team1": "Paris Gentle Mates",
+      "team1_score": null,
+      "team2": "FaZe Vegas",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_20",
+      "start_date": "2026-02-14T20:00:00+00:00",
+      "team1": "Riyadh Falcons",
+      "team1_score": null,
+      "team2": "Paris Gentle Mates",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_21",
+      "start_date": "2026-02-14T21:30:00+00:00",
+      "team1": "OpTic Texas",
+      "team1_score": null,
+      "team2": "G2 Minnesota",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_22",
+      "start_date": "2026-03-20T20:30:00+00:00",
+      "team1": "Cloud9 New York",
+      "team1_score": null,
+      "team2": "Carolina Royal Ravens",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_23",
+      "start_date": "2026-02-14T23:00:00+00:00",
+      "team1": "Toronto KOI",
+      "team1_score": null,
+      "team2": "FaZe Vegas",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_24",
+      "start_date": "2026-03-20T22:00:00+00:00",
+      "team1": "Vancouver Surge",
+      "team1_score": null,
+      "team2": "G2 Minnesota",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_25",
+      "start_date": "2026-02-15T00:30:00+00:00",
+      "team1": "Vancouver Surge",
+      "team1_score": null,
+      "team2": "Los Angeles Thieves",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_26",
+      "start_date": "2026-03-21T19:00:00+00:00",
+      "team1": "Miami Heretics",
+      "team1_score": null,
+      "team2": "Carolina Royal Ravens",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_27",
+      "start_date": "2026-03-21T20:30:00+00:00",
+      "team1": "FaZe Vegas",
+      "team1_score": null,
+      "team2": "Cloud9 New York",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_28",
+      "start_date": "2026-02-15T20:00:00+00:00",
+      "team1": "Paris Gentle Mates",
+      "team1_score": null,
+      "team2": "Miami Heretics",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_29",
+      "start_date": "2026-02-15T21:30:00+00:00",
+      "team1": "Riyadh Falcons",
+      "team1_score": null,
+      "team2": "Boston Breach",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_30",
+      "start_date": "2026-03-21T22:00:00+00:00",
+      "team1": "Riyadh Falcons",
+      "team1_score": null,
+      "team2": "OpTic Texas",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_31",
+      "start_date": "2026-02-15T23:00:00+00:00",
+      "team1": "Los Angeles Thieves",
+      "team1_score": null,
+      "team2": "Carolina Royal Ravens",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_32",
+      "start_date": "2026-03-21T23:30:00+00:00",
+      "team1": "Los Angeles Thieves",
+      "team1_score": null,
+      "team2": "G2 Minnesota",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_33",
+      "start_date": "2026-02-16T00:30:00+00:00",
+      "team1": "G2 Minnesota",
+      "team1_score": null,
+      "team2": "Cloud9 New York",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_34",
+      "start_date": "2026-03-22T19:00:00+00:00",
+      "team1": "Vancouver Surge",
+      "team1_score": null,
+      "team2": "Riyadh Falcons",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_35",
+      "start_date": "2026-02-20T20:00:00+00:00",
+      "team1": "Vancouver Surge",
+      "team1_score": null,
+      "team2": "FaZe Vegas",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_36",
+      "start_date": "2026-03-22T20:30:00+00:00",
+      "team1": "Paris Gentle Mates",
+      "team1_score": null,
+      "team2": "Los Angeles Thieves",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_37",
+      "start_date": "2026-02-20T21:30:00+00:00",
+      "team1": "Riyadh Falcons",
+      "team1_score": null,
+      "team2": "Cloud9 New York",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_38",
+      "start_date": "2026-03-22T22:00:00+00:00",
+      "team1": "Miami Heretics",
+      "team1_score": null,
+      "team2": "Boston Breach",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_39",
+      "start_date": "2026-02-20T23:00:00+00:00",
+      "team1": "Toronto KOI",
+      "team1_score": null,
+      "team2": "Los Angeles Thieves",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_40",
+      "start_date": "2026-03-22T23:30:00+00:00",
+      "team1": "Toronto KOI",
+      "team1_score": null,
+      "team2": "OpTic Texas",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_41",
+      "start_date": "2026-02-21T20:00:00+00:00",
+      "team1": "Toronto KOI",
+      "team1_score": null,
+      "team2": "G2 Minnesota",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_42",
+      "start_date": "2026-02-21T21:30:00+00:00",
+      "team1": "Los Angeles Thieves",
+      "team1_score": null,
+      "team2": "Boston Breach",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_43",
+      "start_date": "2026-02-21T23:00:00+00:00",
+      "team1": "Paris Gentle Mates",
+      "team1_score": null,
+      "team2": "Carolina Royal Ravens",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_44",
+      "start_date": "2026-02-22T00:30:00+00:00",
+      "team1": "OpTic Texas",
+      "team1_score": null,
+      "team2": "Miami Heretics",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_45",
+      "start_date": "2026-02-22T20:00:00+00:00",
+      "team1": "Riyadh Falcons",
+      "team1_score": null,
+      "team2": "Carolina Royal Ravens",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_46",
+      "start_date": "2026-02-22T21:30:00+00:00",
+      "team1": "Vancouver Surge",
+      "team1_score": null,
+      "team2": "Boston Breach",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_47",
+      "start_date": "2026-02-22T23:00:00+00:00",
+      "team1": "OpTic Texas",
+      "team1_score": null,
+      "team2": "Cloud9 New York",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_48",
+      "start_date": "2026-02-23T00:30:00+00:00",
+      "team1": "G2 Minnesota",
+      "team1_score": null,
+      "team2": "FaZe Vegas",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_49",
+      "start_date": "2026-02-27T20:00:00+00:00",
+      "team1": "Carolina Royal Ravens",
+      "team1_score": null,
+      "team2": "Boston Breach",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_50",
+      "start_date": "2026-02-27T21:30:00+00:00",
+      "team1": "Riyadh Falcons",
+      "team1_score": null,
+      "team2": "FaZe Vegas",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_51",
+      "start_date": "2026-02-27T23:00:00+00:00",
+      "team1": "Paris Gentle Mates",
+      "team1_score": null,
+      "team2": "Cloud9 New York",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_52",
+      "start_date": "2026-02-28T20:00:00+00:00",
+      "team1": "Riyadh Falcons",
+      "team1_score": null,
+      "team2": "G2 Minnesota",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_53",
+      "start_date": "2026-02-28T21:30:00+00:00",
+      "team1": "Toronto KOI",
+      "team1_score": null,
+      "team2": "Miami Heretics",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_54",
+      "start_date": "2026-02-28T23:00:00+00:00",
+      "team1": "Vancouver Surge",
+      "team1_score": null,
+      "team2": "Carolina Royal Ravens",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_55",
+      "start_date": "2026-03-01T00:30:00+00:00",
+      "team1": "OpTic Texas",
+      "team1_score": null,
+      "team2": "Los Angeles Thieves",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_56",
+      "start_date": "2026-03-01T20:00:00+00:00",
+      "team1": "Toronto KOI",
+      "team1_score": null,
+      "team2": "Paris Gentle Mates",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_57",
+      "start_date": "2026-03-01T21:30:00+00:00",
+      "team1": "FaZe Vegas",
+      "team1_score": null,
+      "team2": "Boston Breach",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_58",
+      "start_date": "2026-03-01T23:00:00+00:00",
+      "team1": "Miami Heretics",
+      "team1_score": null,
+      "team2": "Cloud9 New York",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_59",
+      "start_date": "2026-03-02T00:30:00+00:00",
+      "team1": "Vancouver Surge",
+      "team1_score": null,
+      "team2": "OpTic Texas",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_60",
+      "start_date": "2026-03-06T20:00:00+00:00",
+      "team1": "Vancouver Surge",
+      "team1_score": null,
+      "team2": "Cloud9 New York",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_61",
+      "start_date": "2026-03-06T21:30:00+00:00",
+      "team1": "Los Angeles Thieves",
+      "team1_score": null,
+      "team2": "FaZe Vegas",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_62",
+      "start_date": "2026-03-06T23:00:00+00:00",
+      "team1": "Miami Heretics",
+      "team1_score": null,
+      "team2": "G2 Minnesota",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_63",
+      "start_date": "2026-03-07T20:00:00+00:00",
+      "team1": "Paris Gentle Mates",
+      "team1_score": null,
+      "team2": "G2 Minnesota",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_64",
+      "start_date": "2026-03-07T21:30:00+00:00",
+      "team1": "OpTic Texas",
+      "team1_score": null,
+      "team2": "FaZe Vegas",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    },
+    {
+      "id": "match_65",
+      "start_date": "2026-03-07T23:00:00+00:00",
+      "team1": "Toronto KOI",
+      "team1_score": null,
+      "team2": "Riyadh Falcons",
+      "team2_score": null,
+      "win_probability_team1": 0.5
+    }
+  ]
+}
