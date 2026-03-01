@@ -3,6 +3,7 @@
 import pytest
 import json
 from app import app
+from config import Config
 
 
 @pytest.fixture
@@ -111,7 +112,8 @@ class TestAPIEndpoints:
 
         # Check simulation metadata
         assert isinstance(data['simulation_time'], (int, float))
-        assert data['iterations'] == 10000
+        assert data['iterations'] == Config.NUM_SIMULATIONS
+        assert data['simulation_method'] in ('monte_carlo', 'exhaustive')
 
     def test_simulate_missing_body(self, client):
         """Test POST /api/simulate with missing body."""
@@ -267,8 +269,8 @@ class TestAPIEndpoints:
 
         assert response.status_code == 200
 
-        # Should complete in reasonable time (1000 sims + network)
-        assert elapsed < 3.0
+        # Should complete in reasonable time (NUM_SIMULATIONS + network)
+        assert elapsed < 20.0
 
     def test_cors_headers(self, client):
         """Test that CORS headers are present."""

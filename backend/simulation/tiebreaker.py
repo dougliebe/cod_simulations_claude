@@ -1,7 +1,10 @@
 """7-tier tiebreaker system for Call of Duty standings."""
 
+import logging
 import random
 from typing import List, Dict, Tuple, Optional
+
+logger = logging.getLogger(__name__)
 from backend.models.standings import SeasonStandings
 from config import Config
 
@@ -9,14 +12,17 @@ from config import Config
 class TiebreakerResolver:
     """Implements the 7-tier tiebreaker system with recursive resolution."""
 
-    def __init__(self, standings: SeasonStandings):
+    def __init__(self, standings: SeasonStandings, deterministic: bool = False):
         """
         Initialize tiebreaker resolver.
 
         Args:
             standings: SeasonStandings object with team records and matches
+            deterministic: If True, use alphabetical order for tier 7 (coin flip)
+                instead of random. Used for exhaustive simulation.
         """
         self.standings = standings
+        self.deterministic = deterministic
 
     def calculate_seeding(self) -> List[str]:
         """
@@ -200,8 +206,16 @@ class TiebreakerResolver:
         - Seeds 4/9/10/11: Coin flip (random)
         - Other seeds: Random or higher seed chooses
 
-        For simulation purposes, use random selection.
+        For simulation purposes, use random selection. In deterministic mode,
+        use alphabetical order to ensure reproducible exhaustive enumeration.
         """
+        if self.deterministic:
+            resolved = sorted(teams)
+            logger.info(
+                "Tier 7 tiebreaker: resolved %s alphabetically (deterministic mode)",
+                resolved
+            )
+            return resolved
         # In actual implementation, would check which seeds these teams are competing for
         # For now, use random shuffle
         shuffled = list(teams)

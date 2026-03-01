@@ -24,6 +24,9 @@ class Config:
     SIMULATION_TIMEOUT = 5.0  # Max seconds for simulation
     ENABLE_PROFILING = False
 
+    # Exhaustive simulation: use when 6^N < this (6 outcomes per match)
+    EXHAUSTIVE_MAX_SCENARIOS = 2_000_000
+
     # Data paths
     DATA_DIR = 'data'
     MATCHES_CSV = 'data/upcoming_matches_2026_major2.csv'

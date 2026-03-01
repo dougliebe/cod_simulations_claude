@@ -1,8 +1,11 @@
 """Monte Carlo season simulator for Call of Duty."""
 
+import itertools
 from collections import defaultdict
 from typing import Dict, List, Optional
 from multiprocessing import Pool, cpu_count
+
+from config import Config
 from functools import partial
 from backend.models.team import Team
 from backend.models.match import Match
@@ -10,6 +13,12 @@ from backend.models.standings import SeasonStandings
 from backend.simulation.elo import EloCalculator
 from backend.simulation.match_simulator import MatchSimulator
 from backend.simulation.tiebreaker import TiebreakerResolver
+
+# 6 valid best-of-5 outcomes per match: (3-0, 3-1, 3-2) x 2 winners
+OUTCOMES_PER_MATCH = [
+    (3, 0), (3, 1), (3, 2),  # team1 wins
+    (0, 3), (1, 3), (2, 3),  # team2 wins
+]
 
 
 class SeasonSimulator:
@@ -461,3 +470,103 @@ class SeasonSimulator:
 
         # Use map-level probability as approximation
         return self.elo_calculator.calculate_win_probability(elo1, elo2)
+
+    def get_remaining_match_count(
+        self,
+        adjusted_matches: Optional[List[Match]] = None
+    ) -> int:
+        """
+        Count matches that are still unplayed after applying adjustments.
+
+        Args:
+            adjusted_matches: Optional list of user-adjusted match results
+
+        Returns:
+            Number of remaining (unplayed) matches
+        """
+        sim_matches = [
+            Match(m.id, m.team1, m.team2, m.team1_score, m.team2_score, m.start_date)
+            for m in self.base_matches
+        ]
+        if adjusted_matches:
+            sim_matches = self._apply_user_adjustments(sim_matches, adjusted_matches)
+        return sum(1 for m in sim_matches if not m.is_completed)
+
+    def run_exhaustive_simulations(
+        self,
+        adjusted_matches: Optional[List[Match]] = None,
+        max_scenarios: Optional[int] = None
+    ) -> Dict[str, Dict[str, float]]:
+        """
+        Enumerate all possible score outcomes for remaining matches and compute
+        exact placement probabilities. Uses uniform weighting (each of 6 outcomes
+        per match equally likely). Only use when 6^N < max_scenarios.
+
+        Args:
+            adjusted_matches: Optional list of user-adjusted match results
+            max_scenarios: Max scenarios to allow (default from Config).
+                Use exhaustive only when 6^remaining < this.
+
+        Returns:
+            Same format as run_simulations: {team: {seed_1, ..., make_play_ins, make_bracket}}
+
+        Raises:
+            ValueError: If total scenarios would exceed max_scenarios
+        """
+        if max_scenarios is None:
+            max_scenarios = Config.EXHAUSTIVE_MAX_SCENARIOS
+
+        # Build match list with adjustments
+        sim_matches = [
+            Match(m.id, m.team1, m.team2, m.team1_score, m.team2_score, m.start_date)
+            for m in self.base_matches
+        ]
+        if adjusted_matches:
+            sim_matches = self._apply_user_adjustments(sim_matches, adjusted_matches)
+
+        # Collect remaining matches and their indices
+        remaining_matches = [(i, m) for i, m in enumerate(sim_matches) if not m.is_completed]
+        num_remaining = len(remaining_matches)
+
+        total = 6 ** num_remaining
+        if total >= max_scenarios:
+            raise ValueError(
+                f"Too many scenarios: 6^{num_remaining} = {total} >= {max_scenarios}. "
+                "Use Monte Carlo simulation instead."
+            )
+
+        results = defaultdict(lambda: defaultdict(int))
+
+        for outcome_combo in itertools.product(
+            range(len(OUTCOMES_PER_MATCH)),
+            repeat=num_remaining
+        ):
+            # Apply this outcome combination to the match list
+            for (idx, match), outcome_idx in zip(remaining_matches, outcome_combo):
+                s1, s2 = OUTCOMES_PER_MATCH[outcome_idx]
+                # Create new match with scores (match is tuple of index and Match)
+                sim_matches[idx] = Match(
+                    match.id, match.team1, match.team2, s1, s2, match.start_date
+                )
+
+            # Create fresh teams and standings for this scenario
+            sim_teams = self._create_fresh_teams()
+            # Need fresh copy of matches with scores applied
+            scenario_matches = [
+                Match(m.id, m.team1, m.team2, m.team1_score, m.team2_score, m.start_date)
+                for m in sim_matches
+            ]
+            standings = SeasonStandings(sim_teams, scenario_matches)
+            standings.update_team_records_from_matches()
+
+            resolver = TiebreakerResolver(standings, deterministic=True)
+            final_seeding = resolver.calculate_seeding()
+
+            for seed, team_name in enumerate(final_seeding, 1):
+                results[team_name][f"seed_{seed}"] += 1
+                if seed <= 10:
+                    results[team_name]["make_play_ins"] += 1
+                if seed <= 6:
+                    results[team_name]["make_bracket"] += 1
+
+        return self._calculate_probabilities(dict(results), total)

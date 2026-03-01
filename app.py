@@ -174,12 +174,39 @@ def simulate():
         except KeyError as e:
             return jsonify({'error': f'Missing required field: {str(e)}'}), 400
 
+    # Choose simulation method: auto | monte_carlo | exhaustive
+    simulation_method_param = (data.get('simulation_method') or 'auto').lower()
+    remaining_count = simulator.get_remaining_match_count(adjusted_matches)
+    total_scenarios = 6 ** remaining_count
+    use_exhaustive = (
+        simulation_method_param == 'exhaustive'
+        or (simulation_method_param == 'auto' and total_scenarios < Config.EXHAUSTIVE_MAX_SCENARIOS)
+    )
+
     # Run simulation with adjustments
     start_time = time.time()
-    probabilities = simulator.run_simulations(
-        num_iterations=Config.NUM_SIMULATIONS,
-        adjusted_matches=adjusted_matches
-    )
+    simulation_method = 'exhaustive'
+    iterations = total_scenarios
+    try:
+        if use_exhaustive:
+            probabilities = simulator.run_exhaustive_simulations(
+                adjusted_matches=adjusted_matches
+            )
+        else:
+            probabilities = simulator.run_simulations(
+                num_iterations=Config.NUM_SIMULATIONS,
+                adjusted_matches=adjusted_matches
+            )
+            simulation_method = 'monte_carlo'
+            iterations = Config.NUM_SIMULATIONS
+    except ValueError:
+        # Fallback to Monte Carlo if exhaustive fails (e.g. too many scenarios)
+        probabilities = simulator.run_simulations(
+            num_iterations=Config.NUM_SIMULATIONS,
+            adjusted_matches=adjusted_matches
+        )
+        simulation_method = 'monte_carlo'
+        iterations = Config.NUM_SIMULATIONS
     elapsed = time.time() - start_time
 
     # Get updated standings with adjusted matches applied
@@ -216,7 +243,9 @@ def simulate():
         'probabilities': probabilities,
         'teams': teams_data,
         'simulation_time': round(elapsed, 3),
-        'iterations': Config.NUM_SIMULATIONS
+        'simulation_method': simulation_method,
+        'iterations': iterations,
+        'total_scenarios': total_scenarios if simulation_method == 'exhaustive' else None
     })
 
 
