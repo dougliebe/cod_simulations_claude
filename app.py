@@ -6,6 +6,7 @@ from backend.utils.data_loader import DataLoader
 from backend.simulation.elo import EloCalculator
 from backend.simulation.season_simulator import SeasonSimulator
 from backend.models.match import Match
+from backend.models.team import Team
 from config import Config
 import time
 
@@ -27,40 +28,65 @@ teams, matches = DataLoader.load_all_data(
 )
 print(f"✓ Loaded {len(teams)} teams and {len(matches)} matches")
 
-# Initialize simulator (will be reused for requests)
+# Equal-elo teams (all 1500) for toggle - records are computed from matches
+teams_equal_elo = {name: Team(name=name, elo_rating=Config.DEFAULT_ELO) for name in teams}
+
+# Initialize simulators for both Elo modes
 elo_calc = EloCalculator(k_factor=Config.ELO_K_FACTOR)
 simulator = SeasonSimulator(teams, matches, elo_calc)
+simulator_equal_elo = SeasonSimulator(teams_equal_elo, matches, elo_calc)
 
-# Store baseline result (probabilities + cutoffs, computed once at startup)
-# Lazy initialization to avoid multiprocessing issues when workers import this module
+# Store baseline results (lazy init per mode)
 baseline_result = None
+baseline_result_equal_elo = None
 baseline_simulation_time = None
+baseline_simulation_time_equal_elo = None
 
-def get_baseline_probabilities():
-    """Compute baseline probabilities on first access (lazy initialization)."""
-    global baseline_result, baseline_simulation_time
-    if baseline_result is None:
-        print("Computing baseline probabilities...")
-        start_time = time.time()
-        baseline_result = simulator.run_simulations(Config.NUM_SIMULATIONS, parallel=True)
-        baseline_simulation_time = time.time() - start_time
-        print(f"✓ Baseline probabilities computed in {baseline_simulation_time:.3f}s")
-    return baseline_result["probabilities"]
+def get_simulator(use_equal_elo: bool):
+    """Return simulator for the given Elo mode."""
+    return simulator_equal_elo if use_equal_elo else simulator
 
-def get_baseline_result():
-    """Get full baseline result (probabilities + cutoffs)."""
-    get_baseline_probabilities()  # Ensure computed
-    return baseline_result
+def get_teams(use_equal_elo: bool):
+    """Return teams for the given Elo mode."""
+    return teams_equal_elo if use_equal_elo else teams
 
-def recompute_baseline_probabilities():
-    """Force recomputation of baseline probabilities."""
-    global baseline_result, baseline_simulation_time
-    print("Recomputing baseline probabilities...")
+def get_baseline_result(use_equal_elo: bool = False):
+    """Get full baseline result (probabilities + cutoffs) for the given Elo mode."""
+    global baseline_result, baseline_result_equal_elo, baseline_simulation_time, baseline_simulation_time_equal_elo
+    sim = get_simulator(use_equal_elo)
+    if use_equal_elo:
+        if baseline_result_equal_elo is None:
+            print("Computing baseline probabilities (equal Elo)...")
+            start_time = time.time()
+            baseline_result_equal_elo = sim.run_simulations(Config.NUM_SIMULATIONS, parallel=True)
+            baseline_simulation_time_equal_elo = time.time() - start_time
+            print(f"✓ Baseline (equal Elo) computed in {baseline_simulation_time_equal_elo:.3f}s")
+        return baseline_result_equal_elo, baseline_simulation_time_equal_elo
+    else:
+        if baseline_result is None:
+            print("Computing baseline probabilities...")
+            start_time = time.time()
+            baseline_result = sim.run_simulations(Config.NUM_SIMULATIONS, parallel=True)
+            baseline_simulation_time = time.time() - start_time
+            print(f"✓ Baseline probabilities computed in {baseline_simulation_time:.3f}s")
+        return baseline_result, baseline_simulation_time
+
+def recompute_baseline_probabilities(use_equal_elo: bool = False):
+    """Force recomputation of baseline probabilities for the given Elo mode."""
+    global baseline_result, baseline_result_equal_elo, baseline_simulation_time, baseline_simulation_time_equal_elo
+    sim = get_simulator(use_equal_elo)
+    print(f"Recomputing baseline probabilities ({'equal Elo' if use_equal_elo else 'CSV Elo'})...")
     start_time = time.time()
-    baseline_result = simulator.run_simulations(Config.NUM_SIMULATIONS, parallel=True)
-    baseline_simulation_time = time.time() - start_time
-    print(f"✓ Baseline probabilities recomputed in {baseline_simulation_time:.3f}s")
-    return baseline_result["probabilities"]
+    result = sim.run_simulations(Config.NUM_SIMULATIONS, parallel=True)
+    elapsed = time.time() - start_time
+    if use_equal_elo:
+        baseline_result_equal_elo = result
+        baseline_simulation_time_equal_elo = elapsed
+    else:
+        baseline_result = result
+        baseline_simulation_time = elapsed
+    print(f"✓ Baseline recomputed in {elapsed:.3f}s")
+    return result["probabilities"]
 
 
 @app.route('/')
@@ -74,16 +100,24 @@ def get_initial_state():
     """
     Get initial state with current standings and baseline probabilities.
 
+    Query params:
+        use_equal_elo: 'true' to use equal Elo (1500) for all teams instead of CSV values
+
     Returns:
         JSON with teams, probabilities, matches, and Elo ratings
     """
+    use_equal_elo = request.args.get('use_equal_elo', 'false').lower() == 'true'
+    sim = get_simulator(use_equal_elo)
+    teams_for_mode = get_teams(use_equal_elo)
+    baseline, sim_time = get_baseline_result(use_equal_elo)
+
     # Get current standings
-    current_standings = simulator.get_current_standings()
+    current_standings = sim.get_current_standings()
 
     # Format teams data
     teams_data = []
     for team_name, match_record, map_record in current_standings:
-        team = teams[team_name]
+        team = teams_for_mode[team_name]
         teams_data.append({
             'name': team.name,
             'match_wins': team.match_wins,
@@ -116,15 +150,13 @@ def get_initial_state():
             'team1_score': None,
             'team2_score': None,
             'start_date': m.start_date,
-            'win_probability_team1': simulator.get_match_win_probability(m.team1, m.team2)
+            'win_probability_team1': sim.get_match_win_probability(m.team1, m.team2)
         }
         for m in matches if not m.is_completed
     ]
 
-    # Get Elo ratings
-    elo_ratings = {team.name: team.elo_rating for team in teams.values()}
+    elo_ratings = {team.name: team.elo_rating for team in teams_for_mode.values()}
 
-    baseline = get_baseline_result()
     return jsonify({
         'teams': teams_data,
         'probabilities': baseline['probabilities'],
@@ -132,7 +164,8 @@ def get_initial_state():
         'upcoming_matches': upcoming_matches,
         'elo_ratings': elo_ratings,
         'num_simulations': Config.NUM_SIMULATIONS,
-        'simulation_time': baseline_simulation_time or 0,
+        'simulation_time': sim_time or 0,
+        'use_equal_elo': use_equal_elo,
         'median_bracket_cutoff': baseline.get('median_bracket_cutoff'),
         'median_playin_cutoff': baseline.get('median_playin_cutoff'),
     })
@@ -182,13 +215,21 @@ def simulate():
         except KeyError as e:
             return jsonify({'error': f'Missing required field: {str(e)}'}), 400
 
+    use_equal_elo = data.get('use_equal_elo', False)
+    sim = get_simulator(use_equal_elo)
+    teams_for_mode = get_teams(use_equal_elo)
+
     # Choose simulation method: auto | monte_carlo | exhaustive
+    # Only apply auto threshold (exhaustive vs MC) when we would use MC - i.e. when method is auto or monte_carlo
     simulation_method_param = (data.get('simulation_method') or 'auto').lower()
-    remaining_count = simulator.get_remaining_match_count(adjusted_matches)
+    remaining_count = sim.get_remaining_match_count(adjusted_matches)
     total_scenarios = 6 ** remaining_count
     use_exhaustive = (
         simulation_method_param == 'exhaustive'
-        or (simulation_method_param == 'auto' and total_scenarios < Config.EXHAUSTIVE_MAX_SCENARIOS)
+        or (
+            simulation_method_param in ('auto', 'monte_carlo')
+            and total_scenarios < Config.EXHAUSTIVE_MAX_SCENARIOS
+        )
     )
 
     # Run simulation with adjustments
@@ -197,35 +238,37 @@ def simulate():
     iterations = total_scenarios
     try:
         if use_exhaustive:
-            sim_result = simulator.run_exhaustive_simulations(
+            sim_result = sim.run_exhaustive_simulations(
                 adjusted_matches=adjusted_matches
             )
         else:
-            sim_result = simulator.run_simulations(
+            sim_result = sim.run_simulations(
                 num_iterations=Config.NUM_SIMULATIONS,
                 adjusted_matches=adjusted_matches
             )
             simulation_method = 'monte_carlo'
             iterations = Config.NUM_SIMULATIONS
     except ValueError:
-        # Fallback to Monte Carlo if exhaustive fails (e.g. too many scenarios)
-        sim_result = simulator.run_simulations(
-            num_iterations=Config.NUM_SIMULATIONS,
-            adjusted_matches=adjusted_matches
-        )
-        simulation_method = 'monte_carlo'
-        iterations = Config.NUM_SIMULATIONS
+        # Fallback to Monte Carlo only when we were trying to use exhaustive due to MC-mode logic
+        if simulation_method_param in ('auto', 'monte_carlo'):
+            sim_result = sim.run_simulations(
+                num_iterations=Config.NUM_SIMULATIONS,
+                adjusted_matches=adjusted_matches
+            )
+            simulation_method = 'monte_carlo'
+            iterations = Config.NUM_SIMULATIONS
+        else:
+            raise
     elapsed = time.time() - start_time
     probabilities = sim_result['probabilities']
 
     # Get updated standings with adjusted matches applied
-    current_standings = simulator.get_current_standings(adjusted_matches=adjusted_matches)
+    current_standings = sim.get_current_standings(adjusted_matches=adjusted_matches)
 
     # Format updated teams data
     teams_data = []
     for team_name, match_record, map_record in current_standings:
-        # Get the team from base teams to access Elo
-        team = teams[team_name]
+        team = teams_for_mode[team_name]
 
         # Parse match record to get wins/losses
         match_parts = match_record.split('-')
@@ -257,6 +300,7 @@ def simulate():
         'total_scenarios': total_scenarios if simulation_method == 'exhaustive' else None,
         'median_bracket_cutoff': sim_result.get('median_bracket_cutoff'),
         'median_playin_cutoff': sim_result.get('median_playin_cutoff'),
+        'use_equal_elo': use_equal_elo,
     })
 
 
@@ -265,48 +309,44 @@ def reset():
     """
     Reset to baseline probabilities (no user adjustments).
 
-    Returns:
-        JSON with success status, baseline probabilities, and original standings
+    Request body: { "use_equal_elo": false } (optional)
     """
+    data = request.get_json(silent=True) or {}
+    use_equal_elo = data.get('use_equal_elo', False)
+    sim = get_simulator(use_equal_elo)
+    teams_for_mode = get_teams(use_equal_elo)
+    baseline, sim_time = get_baseline_result(use_equal_elo)
+
     # Get original standings (no adjustments)
-    current_standings = simulator.get_current_standings()
+    current_standings = sim.get_current_standings()
 
     # Format teams data
     teams_data = []
     for team_name, match_record, map_record in current_standings:
-        team = teams[team_name]
-
-        # Parse match record
+        team = teams_for_mode[team_name]
         match_parts = match_record.split('-')
-        match_wins = int(match_parts[0])
-        match_losses = int(match_parts[1])
-
-        # Parse map record
         map_parts = map_record.split('-')
-        map_wins = int(map_parts[0])
-        map_losses = int(map_parts[1])
-
         teams_data.append({
             'name': team_name,
-            'match_wins': match_wins,
-            'match_losses': match_losses,
-            'map_wins': map_wins,
-            'map_losses': map_losses,
+            'match_wins': int(match_parts[0]),
+            'match_losses': int(match_parts[1]),
+            'map_wins': int(map_parts[0]),
+            'map_losses': int(map_parts[1]),
             'match_record': match_record,
             'map_record': map_record,
             'elo_rating': team.elo_rating
         })
 
-    baseline = get_baseline_result()
     return jsonify({
         'status': 'success',
         'message': 'Reset to baseline probabilities',
         'probabilities': baseline['probabilities'],
         'teams': teams_data,
-        'simulation_time': baseline_simulation_time,
+        'simulation_time': sim_time,
         'iterations': Config.NUM_SIMULATIONS,
         'median_bracket_cutoff': baseline.get('median_bracket_cutoff'),
         'median_playin_cutoff': baseline.get('median_playin_cutoff'),
+        'use_equal_elo': use_equal_elo,
     })
 
 
@@ -315,19 +355,24 @@ def recompute_baseline():
     """
     Force recomputation of baseline probabilities.
 
-    Returns:
-        JSON with success status, fresh baseline probabilities, and timing
+    Request body: { "use_equal_elo": false } (optional)
     """
+    data = request.get_json(silent=True) or {}
+    use_equal_elo = data.get('use_equal_elo', False)
+    sim = get_simulator(use_equal_elo)
+    teams_for_mode = get_teams(use_equal_elo)
+
     # Force recomputation
-    probabilities = recompute_baseline_probabilities()
+    recompute_baseline_probabilities(use_equal_elo)
+    baseline, sim_time = get_baseline_result(use_equal_elo)
 
     # Get current standings
-    current_standings = simulator.get_current_standings()
+    current_standings = sim.get_current_standings()
 
     # Format teams data
     teams_data = []
     for team_name, match_record, map_record in current_standings:
-        team = teams[team_name]
+        team = teams_for_mode[team_name]
 
         # Parse match record
         match_parts = match_record.split('-')
@@ -350,16 +395,16 @@ def recompute_baseline():
             'elo_rating': team.elo_rating
         })
 
-    baseline = get_baseline_result()
     return jsonify({
         'status': 'success',
         'message': 'Baseline probabilities recomputed',
         'probabilities': baseline['probabilities'],
         'teams': teams_data,
-        'simulation_time': baseline_simulation_time,
+        'simulation_time': sim_time,
         'iterations': Config.NUM_SIMULATIONS,
         'median_bracket_cutoff': baseline.get('median_bracket_cutoff'),
         'median_playin_cutoff': baseline.get('median_playin_cutoff'),
+        'use_equal_elo': use_equal_elo,
     })
 
 

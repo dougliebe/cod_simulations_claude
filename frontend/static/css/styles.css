@@ -215,6 +215,18 @@ section {
     border-left: 4px solid #ef4444;
 }
 
+/* Equal Elo Toggle */
+.toggle-label {
+    user-select: none;
+}
+
+.toggle-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #2563eb;
+    cursor: pointer;
+}
+
 /* Simulation Info */
 #simulation-info {
     text-align: center;

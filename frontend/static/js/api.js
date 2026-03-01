@@ -8,11 +8,13 @@ class SimulationAPI {
 
     /**
      * Get initial state with current standings and baseline probabilities
+     * @param {boolean} useEqualElo - If true, use equal Elo (1500) for all teams
      * @returns {Promise<Object>} Initial state data
      */
-    static async getInitialState() {
+    static async getInitialState(useEqualElo = false) {
         try {
-            const response = await fetch(`${this.BASE_URL}/initial-state`);
+            const url = `${this.BASE_URL}/initial-state${useEqualElo ? '?use_equal_elo=true' : ''}`;
+            const response = await fetch(url);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -29,9 +31,10 @@ class SimulationAPI {
     /**
      * Run simulation with user-adjusted match results
      * @param {Array<Object>} adjustedMatches - Array of match objects with scores
+     * @param {boolean} useEqualElo - If true, use equal Elo (1500) for all teams
      * @returns {Promise<Object>} Simulation results with probabilities
      */
-    static async simulate(adjustedMatches) {
+    static async simulate(adjustedMatches, useEqualElo = false) {
         try {
             const response = await fetch(`${this.BASE_URL}/simulate`, {
                 method: 'POST',
@@ -39,7 +42,8 @@ class SimulationAPI {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    adjusted_matches: adjustedMatches
+                    adjusted_matches: adjustedMatches,
+                    use_equal_elo: useEqualElo
                 })
             });
 
@@ -58,12 +62,15 @@ class SimulationAPI {
 
     /**
      * Reset to baseline probabilities (no user adjustments)
+     * @param {boolean} useEqualElo - If true, use equal Elo (1500) for all teams
      * @returns {Promise<Object>} Reset response with baseline probabilities
      */
-    static async reset() {
+    static async reset(useEqualElo = false) {
         try {
             const response = await fetch(`${this.BASE_URL}/reset`, {
-                method: 'POST'
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ use_equal_elo: useEqualElo })
             });
 
             if (!response.ok) {
@@ -80,12 +87,15 @@ class SimulationAPI {
 
     /**
      * Force recomputation of baseline probabilities
+     * @param {boolean} useEqualElo - If true, use equal Elo (1500) for all teams
      * @returns {Promise<Object>} Fresh baseline probabilities with new timing
      */
-    static async recomputeBaseline() {
+    static async recomputeBaseline(useEqualElo = false) {
         try {
             const response = await fetch(`${this.BASE_URL}/recompute-baseline`, {
-                method: 'POST'
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ use_equal_elo: useEqualElo })
             });
 
             if (!response.ok) {

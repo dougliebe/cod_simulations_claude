@@ -8,7 +8,8 @@ class App {
         this.state = {
             initialData: null,
             currentProbabilities: null,
-            isSimulating: false
+            isSimulating: false,
+            useEqualElo: false
         };
 
         this.table = new ProbabilityTable();
@@ -25,6 +26,7 @@ class App {
         this.recomputeBaselineBtn = document.getElementById('recompute-baseline-btn');
         this.copyAsImageBtn = document.getElementById('copy-as-image-btn');
         this.errorMessage = document.getElementById('error-message');
+        this.equalEloToggle = document.getElementById('equal-elo-toggle');
     }
 
     /**
@@ -32,11 +34,14 @@ class App {
      */
     async init() {
         try {
+            // Sync toggle with state
+            this.equalEloToggle.checked = this.state.useEqualElo;
+
             // Show loading
             this.table.showLoading(true);
 
             // Fetch initial state from API
-            const data = await SimulationAPI.getInitialState();
+            const data = await SimulationAPI.getInitialState(this.state.useEqualElo);
             this.state.initialData = data;
             this.state.currentProbabilities = data.probabilities;
 
@@ -53,6 +58,10 @@ class App {
                     median_playin_cutoff: data.median_playin_cutoff
                 });
             }
+
+            // Sync state from response (e.g. use_equal_elo)
+            this.state.useEqualElo = data.use_equal_elo ?? this.state.useEqualElo;
+            this.equalEloToggle.checked = this.state.useEqualElo;
 
             // Attach event listeners
             this.attachEventListeners();
@@ -101,6 +110,12 @@ class App {
             this.handleCopyAsImage();
         });
 
+        // Equal Elo toggle - refetch when changed
+        this.equalEloToggle.addEventListener('change', () => {
+            this.state.useEqualElo = this.equalEloToggle.checked;
+            this.refreshForEloMode();
+        });
+
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             // Ctrl/Cmd + Enter to submit
@@ -112,6 +127,33 @@ class App {
                 this.handleReset();
             }
         });
+    }
+
+    /**
+     * Refresh data when Elo mode changes (toggle between CSV and equal Elo)
+     */
+    async refreshForEloMode() {
+        if (this.state.isSimulating) return;
+        try {
+            this.table.showLoading(true);
+            const data = await SimulationAPI.getInitialState(this.state.useEqualElo);
+            this.state.initialData = data;
+            this.state.currentProbabilities = data.probabilities;
+            this.table.renderTable(data.teams, data.probabilities);
+            this.gameBoxes.renderGameBoxes(data.upcoming_matches);
+            if (data.simulation_time !== undefined && data.num_simulations) {
+                this.table.showSimulationInfo(data.simulation_time, data.num_simulations, {
+                    median_bracket_cutoff: data.median_bracket_cutoff,
+                    median_playin_cutoff: data.median_playin_cutoff
+                });
+            }
+            this.state.useEqualElo = data.use_equal_elo ?? this.state.useEqualElo;
+            this.equalEloToggle.checked = this.state.useEqualElo;
+        } catch (error) {
+            this.showError(`Failed to refresh: ${error.message}`);
+        } finally {
+            this.table.showLoading(false);
+        }
     }
 
     /**
@@ -150,7 +192,7 @@ class App {
             this.table.showLoading(true);
 
             // Call API
-            const result = await SimulationAPI.simulate(adjustedMatches);
+            const result = await SimulationAPI.simulate(adjustedMatches, this.state.useEqualElo);
 
             // Update table with teams data and probabilities
             if (result.teams) {
@@ -209,7 +251,7 @@ class App {
             this.table.showLoading(true);
 
             // Call reset API
-            const result = await SimulationAPI.reset();
+            const result = await SimulationAPI.reset(this.state.useEqualElo);
 
             // Reset table to baseline sorted by current standing
             if (result.teams) {
@@ -261,7 +303,7 @@ class App {
             this.table.showLoading(true);
 
             // Call recompute baseline API
-            const result = await SimulationAPI.recomputeBaseline();
+            const result = await SimulationAPI.recomputeBaseline(this.state.useEqualElo);
 
             // Update table with fresh baseline
             if (result.teams) {

@@ -62,6 +62,16 @@ class TestAPIEndpoints:
         assert 'median_bracket_cutoff' in data
         assert 'median_playin_cutoff' in data
 
+    def test_initial_state_equal_elo(self, client):
+        """Test GET /api/initial-state with use_equal_elo=true."""
+        response = client.get('/api/initial-state?use_equal_elo=true')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data.get('use_equal_elo') is True
+        # All Elo ratings should be 1500
+        for team_name, elo in data['elo_ratings'].items():
+            assert elo == Config.DEFAULT_ELO, f"Team {team_name} has Elo {elo}, expected {Config.DEFAULT_ELO}"
+
     def test_simulate_with_adjustments(self, client):
         """Test POST /api/simulate with user adjustments."""
         # Make a request with adjusted matches
@@ -193,7 +203,11 @@ class TestAPIEndpoints:
 
     def test_reset(self, client):
         """Test POST /api/reset endpoint."""
-        response = client.post('/api/reset')
+        response = client.post(
+            '/api/reset',
+            json={},
+            content_type='application/json'
+        )
 
         assert response.status_code == 200
         data = json.loads(response.data)

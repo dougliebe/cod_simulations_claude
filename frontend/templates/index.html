@@ -57,7 +57,11 @@
                 </div>
             </div>
 
-            <div id="probability-section-actions" style="margin-top: 1rem; display: flex; gap: 12px; align-items: center;">
+            <div id="probability-section-actions" style="margin-top: 1rem; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                <label class="toggle-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="equal-elo-toggle" autocomplete="off">
+                    <span>Equal Elo (1500) for all teams</span>
+                </label>
                 <button id="recompute-baseline-btn" class="btn btn-secondary">
                     Recompute Baseline
                 </button>
