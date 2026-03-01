@@ -48,7 +48,10 @@ class App {
 
             // Show simulation info for initial load
             if (data.simulation_time !== undefined && data.num_simulations) {
-                this.table.showSimulationInfo(data.simulation_time, data.num_simulations);
+                this.table.showSimulationInfo(data.simulation_time, data.num_simulations, {
+                    median_bracket_cutoff: data.median_bracket_cutoff,
+                    median_playin_cutoff: data.median_playin_cutoff
+                });
             }
 
             // Attach event listeners
@@ -159,7 +162,10 @@ class App {
             this.state.currentProbabilities = result.probabilities;
 
             // Show simulation info
-            this.table.showSimulationInfo(result.simulation_time, result.iterations);
+            this.table.showSimulationInfo(result.simulation_time, result.iterations, {
+                median_bracket_cutoff: result.median_bracket_cutoff,
+                median_playin_cutoff: result.median_playin_cutoff
+            });
 
             console.log(`Simulation completed in ${result.simulation_time}s`);
         } catch (error) {
@@ -214,6 +220,13 @@ class App {
             }
             this.state.currentProbabilities = result.probabilities;
 
+            if (result.simulation_time !== undefined && result.iterations) {
+                this.table.showSimulationInfo(result.simulation_time, result.iterations, {
+                    median_bracket_cutoff: result.median_bracket_cutoff,
+                    median_playin_cutoff: result.median_playin_cutoff
+                });
+            }
+
             console.log('Reset to baseline probabilities');
         } catch (error) {
             this.showError(`Reset failed: ${error.message}`);
@@ -259,7 +272,10 @@ class App {
             this.state.currentProbabilities = result.probabilities;
 
             // Show simulation info with fresh timing
-            this.table.showSimulationInfo(result.simulation_time, result.iterations);
+            this.table.showSimulationInfo(result.simulation_time, result.iterations, {
+                median_bracket_cutoff: result.median_bracket_cutoff,
+                median_playin_cutoff: result.median_playin_cutoff
+            });
 
             console.log(`Baseline recomputed in ${result.simulation_time}s`);
         } catch (error) {

@@ -34,7 +34,8 @@ class TestSeasonSimulator:
 
     def test_probabilities_sum_to_one(self, simple_simulator):
         """Seed probabilities should sum to ~1.0 for each team."""
-        results = simple_simulator.run_simulations(num_iterations=100)
+        result = simple_simulator.run_simulations(num_iterations=100)
+        results = result["probabilities"]
 
         for team_name, probs in results.items():
             # Sum all seed probabilities
@@ -45,7 +46,8 @@ class TestSeasonSimulator:
 
     def test_all_teams_get_results(self, simple_simulator):
         """All teams should appear in results."""
-        results = simple_simulator.run_simulations(num_iterations=100)
+        result = simple_simulator.run_simulations(num_iterations=100)
+        results = result["probabilities"]
 
         assert len(results) == 4
         assert 'Team A' in results
@@ -55,7 +57,8 @@ class TestSeasonSimulator:
 
     def test_higher_elo_better_seeding(self, simple_simulator):
         """Higher Elo teams should have better average seeding."""
-        results = simple_simulator.run_simulations(num_iterations=500)
+        result = simple_simulator.run_simulations(num_iterations=500)
+        results = result["probabilities"]
 
         # Calculate average seed for each team
         avg_seeds = {}
@@ -86,7 +89,8 @@ class TestSeasonSimulator:
         elo_calc = EloCalculator()
         simulator = SeasonSimulator(teams, matches, elo_calc)
 
-        results = simulator.run_simulations(num_iterations=100)
+        result = simulator.run_simulations(num_iterations=100)
+        results = result["probabilities"]
 
         # Team A should always be seed 1 (100% probability)
         assert results['Team A']['seed_1'] == 1.0
@@ -111,10 +115,11 @@ class TestSeasonSimulator:
             Match('m1', 'Team Strong', 'Team Weak', 0, 3)  # Weak wins 3-0
         ]
 
-        results = simulator.run_simulations(
+        result = simulator.run_simulations(
             num_iterations=100,
             adjusted_matches=adjustments
         )
+        results = result["probabilities"]
 
         # Weak team should always be seed 1 (upset)
         assert results['Team Weak']['seed_1'] == 1.0
@@ -122,7 +127,8 @@ class TestSeasonSimulator:
 
     def test_playoff_probability_tracked(self, simple_simulator):
         """Should track play-in qualification (top 10)."""
-        results = simple_simulator.run_simulations(num_iterations=100)
+        result = simple_simulator.run_simulations(num_iterations=100)
+        results = result["probabilities"]
 
         for team_name, probs in results.items():
             # For 4-team league, all make "play-ins" (top 10)
@@ -132,7 +138,8 @@ class TestSeasonSimulator:
 
     def test_winners_bracket_probability_tracked(self, simple_simulator):
         """Should track bracket qualification (top 6)."""
-        results = simple_simulator.run_simulations(num_iterations=100)
+        result = simple_simulator.run_simulations(num_iterations=100)
+        results = result["probabilities"]
 
         for team_name, probs in results.items():
             # Just verify the key exists if present
@@ -177,7 +184,8 @@ class TestSeasonSimulator:
         elo_calc = EloCalculator()
         simulator = SeasonSimulator(teams, matches, elo_calc)
 
-        results = simulator.run_simulations(num_iterations=200)
+        result = simulator.run_simulations(num_iterations=200)
+        results = result["probabilities"]
 
         # All teams have equal Elo and no matches played
         # Each team should have ~25% chance for each seed (with variance)
@@ -204,7 +212,8 @@ class TestSeasonSimulator:
         elo_calc = EloCalculator()
         simulator = SeasonSimulator(teams, matches, elo_calc)
 
-        results = simulator.run_simulations(num_iterations=100)
+        result = simulator.run_simulations(num_iterations=100)
+        results = result["probabilities"]
 
         # Team A has head start (1-0), should have better seeding
         team_a_top_seeds = results['Team A'].get('seed_1', 0) + results['Team A'].get('seed_2', 0)
@@ -231,7 +240,8 @@ class TestSeasonSimulator:
         elo_calc = EloCalculator()
         simulator = SeasonSimulator(teams, matches, elo_calc)
 
-        results = simulator.run_simulations(num_iterations=100)
+        result = simulator.run_simulations(num_iterations=100)
+        results = result["probabilities"]
 
         # Team 1: 2-0, should always be seed 1
         assert results['Team 1']['seed_1'] == 1.0
@@ -242,10 +252,25 @@ class TestSeasonSimulator:
         # Team 3: 0-2, should always be seed 3
         assert results['Team 3']['seed_3'] == 1.0
 
+    def test_wins_cutoff_tracked(self, simple_simulator):
+        """Should return median bracket and play-in wins cutoffs."""
+        result = simple_simulator.run_simulations(num_iterations=100)
+
+        assert "median_bracket_cutoff" in result
+        assert "median_playin_cutoff" in result
+        # For 4-team league, top 2 are "bracket", top 4 are "play-in"
+        # Cutoffs should be non-negative integers
+        if result["median_bracket_cutoff"] is not None:
+            assert result["median_bracket_cutoff"] >= 0
+        if result["median_playin_cutoff"] is not None:
+            assert result["median_playin_cutoff"] >= 0
+
     def test_multiple_iterations_consistency(self, simple_simulator):
         """Multiple runs should give similar results (Monte Carlo variance)."""
-        results1 = simple_simulator.run_simulations(num_iterations=500)
-        results2 = simple_simulator.run_simulations(num_iterations=500)
+        result1 = simple_simulator.run_simulations(num_iterations=500)
+        result2 = simple_simulator.run_simulations(num_iterations=500)
+        results1 = result1["probabilities"]
+        results2 = result2["probabilities"]
 
         # Results should be similar (not identical due to randomness)
         for team_name in results1.keys():

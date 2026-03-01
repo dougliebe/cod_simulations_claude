@@ -58,6 +58,10 @@ class TestAPIEndpoints:
         # Check Elo ratings
         assert len(data['elo_ratings']) == 12
 
+        # Check wins cutoff metadata (from baseline simulation)
+        assert 'median_bracket_cutoff' in data
+        assert 'median_playin_cutoff' in data
+
     def test_simulate_with_adjustments(self, client):
         """Test POST /api/simulate with user adjustments."""
         # Make a request with adjusted matches
@@ -114,6 +118,10 @@ class TestAPIEndpoints:
         assert isinstance(data['simulation_time'], (int, float))
         assert data['iterations'] == Config.NUM_SIMULATIONS
         assert data['simulation_method'] in ('monte_carlo', 'exhaustive')
+
+        # Check wins cutoffs
+        assert 'median_bracket_cutoff' in data
+        assert 'median_playin_cutoff' in data
 
     def test_simulate_missing_body(self, client):
         """Test POST /api/simulate with missing body."""

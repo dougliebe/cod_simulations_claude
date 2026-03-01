@@ -375,17 +375,30 @@ class ProbabilityTable {
     }
 
     /**
-     * Display simulation info (time and iterations)
+     * Display simulation info (time, iterations, and median wins cutoffs)
      * @param {number} simulationTime - Time in seconds
      * @param {number} iterations - Number of iterations
+     * @param {Object} cutoffs - Optional { median_bracket_cutoff, median_playin_cutoff }
      */
-    showSimulationInfo(simulationTime, iterations) {
+    showSimulationInfo(simulationTime, iterations, cutoffs = {}) {
         const simInfo = document.getElementById('simulation-info');
         const simTime = document.getElementById('sim-time');
         const simIterations = document.getElementById('sim-iterations');
+        const cutoffsDisplay = document.getElementById('cutoffs-display');
 
         simTime.textContent = simulationTime.toFixed(3);
         simIterations.textContent = iterations.toLocaleString();
+
+        const bracket = cutoffs.median_bracket_cutoff;
+        const playin = cutoffs.median_playin_cutoff;
+        if (bracket != null || playin != null) {
+            const parts = [];
+            if (bracket != null) parts.push(`Bracket: ${bracket}+ wins`);
+            if (playin != null) parts.push(`Play-in: ${playin}+ wins`);
+            cutoffsDisplay.textContent = ` • Median cutoff — ${parts.join(', ')}`;
+        } else {
+            cutoffsDisplay.textContent = '';
+        }
 
         simInfo.classList.remove('hidden');
     }

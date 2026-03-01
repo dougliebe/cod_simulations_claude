@@ -59,8 +59,9 @@ def main():
     print()
 
     start = time.time()
-    results = simulator.run_simulations(num_iterations=num_sims)
+    sim_result = simulator.run_simulations(num_iterations=num_sims)
     elapsed = time.time() - start
+    results = sim_result["probabilities"]
 
     print(f"✓ Completed {num_sims} simulations in {elapsed:.3f} seconds")
     print(f"  - Average: {elapsed/num_sims*1000:.2f} ms per simulation")
@@ -128,7 +129,15 @@ def main():
 
     print()
     print("=" * 80)
-    print(f"Simulation complete! ({elapsed:.3f}s for {num_sims} iterations)")
+    cutoff_msg = ""
+    if sim_result.get("median_bracket_cutoff") is not None or sim_result.get("median_playin_cutoff") is not None:
+        parts = []
+        if sim_result.get("median_bracket_cutoff") is not None:
+            parts.append(f"Bracket: {sim_result['median_bracket_cutoff']}+ wins")
+        if sim_result.get("median_playin_cutoff") is not None:
+            parts.append(f"Play-in: {sim_result['median_playin_cutoff']}+ wins")
+        cutoff_msg = f" • Median cutoff — {', '.join(parts)}"
+    print(f"Simulation complete! ({elapsed:.3f}s for {num_sims} iterations){cutoff_msg}")
     print("=" * 80)
 
 

@@ -31,31 +31,36 @@ print(f"✓ Loaded {len(teams)} teams and {len(matches)} matches")
 elo_calc = EloCalculator(k_factor=Config.ELO_K_FACTOR)
 simulator = SeasonSimulator(teams, matches, elo_calc)
 
-# Store baseline probabilities (computed once at startup)
+# Store baseline result (probabilities + cutoffs, computed once at startup)
 # Lazy initialization to avoid multiprocessing issues when workers import this module
-baseline_probabilities = None
+baseline_result = None
 baseline_simulation_time = None
 
 def get_baseline_probabilities():
     """Compute baseline probabilities on first access (lazy initialization)."""
-    global baseline_probabilities, baseline_simulation_time
-    if baseline_probabilities is None:
+    global baseline_result, baseline_simulation_time
+    if baseline_result is None:
         print("Computing baseline probabilities...")
         start_time = time.time()
-        baseline_probabilities = simulator.run_simulations(Config.NUM_SIMULATIONS, parallel=True)
+        baseline_result = simulator.run_simulations(Config.NUM_SIMULATIONS, parallel=True)
         baseline_simulation_time = time.time() - start_time
         print(f"✓ Baseline probabilities computed in {baseline_simulation_time:.3f}s")
-    return baseline_probabilities
+    return baseline_result["probabilities"]
+
+def get_baseline_result():
+    """Get full baseline result (probabilities + cutoffs)."""
+    get_baseline_probabilities()  # Ensure computed
+    return baseline_result
 
 def recompute_baseline_probabilities():
     """Force recomputation of baseline probabilities."""
-    global baseline_probabilities, baseline_simulation_time
+    global baseline_result, baseline_simulation_time
     print("Recomputing baseline probabilities...")
     start_time = time.time()
-    baseline_probabilities = simulator.run_simulations(Config.NUM_SIMULATIONS, parallel=True)
+    baseline_result = simulator.run_simulations(Config.NUM_SIMULATIONS, parallel=True)
     baseline_simulation_time = time.time() - start_time
     print(f"✓ Baseline probabilities recomputed in {baseline_simulation_time:.3f}s")
-    return baseline_probabilities
+    return baseline_result["probabilities"]
 
 
 @app.route('/')
@@ -119,14 +124,17 @@ def get_initial_state():
     # Get Elo ratings
     elo_ratings = {team.name: team.elo_rating for team in teams.values()}
 
+    baseline = get_baseline_result()
     return jsonify({
         'teams': teams_data,
-        'probabilities': get_baseline_probabilities(),
+        'probabilities': baseline['probabilities'],
         'completed_matches': completed_matches,
         'upcoming_matches': upcoming_matches,
         'elo_ratings': elo_ratings,
         'num_simulations': Config.NUM_SIMULATIONS,
-        'simulation_time': baseline_simulation_time or 0
+        'simulation_time': baseline_simulation_time or 0,
+        'median_bracket_cutoff': baseline.get('median_bracket_cutoff'),
+        'median_playin_cutoff': baseline.get('median_playin_cutoff'),
     })
 
 
@@ -189,11 +197,11 @@ def simulate():
     iterations = total_scenarios
     try:
         if use_exhaustive:
-            probabilities = simulator.run_exhaustive_simulations(
+            sim_result = simulator.run_exhaustive_simulations(
                 adjusted_matches=adjusted_matches
             )
         else:
-            probabilities = simulator.run_simulations(
+            sim_result = simulator.run_simulations(
                 num_iterations=Config.NUM_SIMULATIONS,
                 adjusted_matches=adjusted_matches
             )
@@ -201,13 +209,14 @@ def simulate():
             iterations = Config.NUM_SIMULATIONS
     except ValueError:
         # Fallback to Monte Carlo if exhaustive fails (e.g. too many scenarios)
-        probabilities = simulator.run_simulations(
+        sim_result = simulator.run_simulations(
             num_iterations=Config.NUM_SIMULATIONS,
             adjusted_matches=adjusted_matches
         )
         simulation_method = 'monte_carlo'
         iterations = Config.NUM_SIMULATIONS
     elapsed = time.time() - start_time
+    probabilities = sim_result['probabilities']
 
     # Get updated standings with adjusted matches applied
     current_standings = simulator.get_current_standings(adjusted_matches=adjusted_matches)
@@ -245,7 +254,9 @@ def simulate():
         'simulation_time': round(elapsed, 3),
         'simulation_method': simulation_method,
         'iterations': iterations,
-        'total_scenarios': total_scenarios if simulation_method == 'exhaustive' else None
+        'total_scenarios': total_scenarios if simulation_method == 'exhaustive' else None,
+        'median_bracket_cutoff': sim_result.get('median_bracket_cutoff'),
+        'median_playin_cutoff': sim_result.get('median_playin_cutoff'),
     })
 
 
@@ -286,11 +297,16 @@ def reset():
             'elo_rating': team.elo_rating
         })
 
+    baseline = get_baseline_result()
     return jsonify({
         'status': 'success',
         'message': 'Reset to baseline probabilities',
-        'probabilities': get_baseline_probabilities(),
-        'teams': teams_data
+        'probabilities': baseline['probabilities'],
+        'teams': teams_data,
+        'simulation_time': baseline_simulation_time,
+        'iterations': Config.NUM_SIMULATIONS,
+        'median_bracket_cutoff': baseline.get('median_bracket_cutoff'),
+        'median_playin_cutoff': baseline.get('median_playin_cutoff'),
     })
 
 
@@ -334,13 +350,16 @@ def recompute_baseline():
             'elo_rating': team.elo_rating
         })
 
+    baseline = get_baseline_result()
     return jsonify({
         'status': 'success',
         'message': 'Baseline probabilities recomputed',
-        'probabilities': probabilities,
+        'probabilities': baseline['probabilities'],
         'teams': teams_data,
         'simulation_time': baseline_simulation_time,
-        'iterations': Config.NUM_SIMULATIONS
+        'iterations': Config.NUM_SIMULATIONS,
+        'median_bracket_cutoff': baseline.get('median_bracket_cutoff'),
+        'median_playin_cutoff': baseline.get('median_playin_cutoff'),
     })
 
 

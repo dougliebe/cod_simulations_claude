@@ -1,8 +1,9 @@
 """Monte Carlo season simulator for Call of Duty."""
 
 import itertools
+import statistics
 from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from multiprocessing import Pool, cpu_count
 
 from config import Config
@@ -68,15 +69,10 @@ class SeasonSimulator:
             parallel: Use multiprocessing for speedup (default: True)
 
         Returns:
-            Dictionary mapping team name to probability dictionary:
-            {
-                "Team A": {
-                    "make_playoffs": 0.85,
-                    "seed_1": 0.12,
-                    "seed_2": 0.23,
-                    ...
-                }
-            }
+            Dict with keys:
+                - "probabilities": {team: {make_play_ins, make_bracket, seed_1, ...}}
+                - "median_bracket_cutoff": min wins among top 6 qualifiers (median across iterations)
+                - "median_playin_cutoff": min wins among top 10 qualifiers (median across iterations)
         """
         # Use parallel execution for large runs (overhead not worth it for <500)
         if parallel and num_iterations >= 500:
@@ -89,10 +85,12 @@ class SeasonSimulator:
         self,
         num_iterations: int,
         adjusted_matches: Optional[List[Match]] = None
-    ) -> Dict[str, Dict[str, float]]:
+    ) -> Dict:
         """Run simulations serially (no parallelization)."""
         # Track results for each team
         results = defaultdict(lambda: defaultdict(int))
+        bracket_cutoffs: List[int] = []
+        playin_cutoffs: List[int] = []
 
         # Run simulations
         for iteration in range(num_iterations):
@@ -121,6 +119,13 @@ class SeasonSimulator:
             resolver = TiebreakerResolver(standings)
             final_seeding = resolver.calculate_seeding()
 
+            # Track wins cutoffs (min wins among teams that qualified)
+            bracket_cutoff, playin_cutoff = self._compute_cutoffs(standings, final_seeding)
+            if bracket_cutoff is not None:
+                bracket_cutoffs.append(bracket_cutoff)
+            if playin_cutoff is not None:
+                playin_cutoffs.append(playin_cutoff)
+
             # Record results
             for seed, team_name in enumerate(final_seeding, 1):
                 results[team_name][f"seed_{seed}"] += 1
@@ -133,8 +138,41 @@ class SeasonSimulator:
                 if seed <= 6:
                     results[team_name]["make_bracket"] += 1
 
-        # Convert counts to probabilities
-        return self._calculate_probabilities(results, num_iterations)
+        # Convert counts to probabilities and compute median cutoffs
+        probabilities = self._calculate_probabilities(results, num_iterations)
+        median_bracket = int(statistics.median(bracket_cutoffs)) if bracket_cutoffs else None
+        median_playin = int(statistics.median(playin_cutoffs)) if playin_cutoffs else None
+        return {
+            "probabilities": probabilities,
+            "median_bracket_cutoff": median_bracket,
+            "median_playin_cutoff": median_playin,
+        }
+
+    def _compute_cutoffs(
+        self,
+        standings: SeasonStandings,
+        final_seeding: List[str]
+    ) -> Tuple[Optional[int], Optional[int]]:
+        """
+        Compute minimum wins among teams that made bracket/play-in.
+        Excludes teams that tied but lost tiebreaker (only qualified teams count).
+
+        Returns:
+            (bracket_cutoff, playin_cutoff) - min match wins among qualifiers
+        """
+        bracket_teams = final_seeding[: Config.BRACKET_TEAMS]
+        playin_teams = final_seeding[: Config.PLAY_IN_TEAMS]
+
+        bracket_wins = [
+            standings.teams[t].match_wins for t in bracket_teams
+        ] if bracket_teams else []
+        playin_wins = [
+            standings.teams[t].match_wins for t in playin_teams
+        ] if playin_teams else []
+
+        bracket_cutoff = min(bracket_wins) if bracket_wins else None
+        playin_cutoff = min(playin_wins) if playin_wins else None
+        return (bracket_cutoff, playin_cutoff)
 
     def _create_fresh_teams(self) -> Dict[str, Team]:
         """Create fresh team copies with reset records."""
@@ -299,7 +337,7 @@ class SeasonSimulator:
         self,
         chunk_size: int,
         adjusted_matches: Optional[List[Match]] = None
-    ) -> Dict[str, Dict[str, int]]:
+    ) -> Tuple[Dict[str, Dict[str, int]], List[int], List[int]]:
         """
         Worker function: Run a chunk of iterations.
 
@@ -310,9 +348,11 @@ class SeasonSimulator:
             adjusted_matches: Optional user-adjusted matches
 
         Returns:
-            Dictionary of counts for each team (not probabilities)
+            Tuple of (results dict, bracket_cutoffs list, playin_cutoffs list)
         """
         results = defaultdict(lambda: defaultdict(int))
+        bracket_cutoffs: List[int] = []
+        playin_cutoffs: List[int] = []
 
         for _ in range(chunk_size):
             # Create fresh copies for this iteration
@@ -339,6 +379,13 @@ class SeasonSimulator:
             resolver = TiebreakerResolver(standings)
             final_seeding = resolver.calculate_seeding()
 
+            # Track wins cutoffs
+            bracket_cutoff, playin_cutoff = self._compute_cutoffs(standings, final_seeding)
+            if bracket_cutoff is not None:
+                bracket_cutoffs.append(bracket_cutoff)
+            if playin_cutoff is not None:
+                playin_cutoffs.append(playin_cutoff)
+
             # Record results
             for seed, team_name in enumerate(final_seeding, 1):
                 results[team_name][f"seed_{seed}"] += 1
@@ -351,33 +398,42 @@ class SeasonSimulator:
                 if seed <= 6:
                     results[team_name]["make_bracket"] += 1
 
-        return dict(results)
+        return (dict(results), bracket_cutoffs, playin_cutoffs)
 
     def _merge_results(
         self,
-        chunk_results: List[Dict[str, Dict[str, int]]],
+        chunk_results: List[Tuple[Dict[str, Dict[str, int]], List[int], List[int]]],
         num_iterations: int
-    ) -> Dict[str, Dict[str, float]]:
+    ) -> Dict:
         """
         Merge results from parallel workers.
 
         Args:
-            chunk_results: List of result dictionaries from each worker
+            chunk_results: List of (results dict, bracket_cutoffs, playin_cutoffs) per worker
             num_iterations: Total number of iterations
 
         Returns:
-            Dictionary of probabilities for each team
+            Dict with probabilities, median_bracket_cutoff, median_playin_cutoff
         """
         merged = defaultdict(lambda: defaultdict(int))
+        all_bracket_cutoffs: List[int] = []
+        all_playin_cutoffs: List[int] = []
 
-        # Sum counts from all workers
-        for chunk in chunk_results:
-            for team_name, stats in chunk.items():
+        for results_dict, bracket_cutoffs, playin_cutoffs in chunk_results:
+            for team_name, stats in results_dict.items():
                 for key, count in stats.items():
                     merged[team_name][key] += count
+            all_bracket_cutoffs.extend(bracket_cutoffs)
+            all_playin_cutoffs.extend(playin_cutoffs)
 
-        # Convert counts to probabilities
-        return self._calculate_probabilities(dict(merged), num_iterations)
+        probabilities = self._calculate_probabilities(dict(merged), num_iterations)
+        median_bracket = int(statistics.median(all_bracket_cutoffs)) if all_bracket_cutoffs else None
+        median_playin = int(statistics.median(all_playin_cutoffs)) if all_playin_cutoffs else None
+        return {
+            "probabilities": probabilities,
+            "median_bracket_cutoff": median_bracket,
+            "median_playin_cutoff": median_playin,
+        }
 
     def get_current_standings(
         self,
@@ -439,14 +495,15 @@ class SeasonSimulator:
             List of team names in final seeding order
         """
         # Run single simulation
-        results = self.run_simulations(num_iterations=1, adjusted_matches=adjusted_matches)
+        result = self.run_simulations(num_iterations=1, adjusted_matches=adjusted_matches)
+        probs = result["probabilities"]
 
         # Extract the seeding from results
         # Find which seed each team got (will be 1.0 probability for that seed)
         seeding = [None] * len(self.base_teams)
 
-        for team_name, probs in results.items():
-            for key, prob in probs.items():
+        for team_name, team_probs in probs.items():
+            for key, prob in team_probs.items():
                 if key.startswith('seed_') and prob == 1.0:
                     seed = int(key.split('_')[1])
                     seeding[seed - 1] = team_name
@@ -536,6 +593,8 @@ class SeasonSimulator:
             )
 
         results = defaultdict(lambda: defaultdict(int))
+        bracket_cutoffs: List[int] = []
+        playin_cutoffs: List[int] = []
 
         for outcome_combo in itertools.product(
             range(len(OUTCOMES_PER_MATCH)),
@@ -562,6 +621,13 @@ class SeasonSimulator:
             resolver = TiebreakerResolver(standings, deterministic=True)
             final_seeding = resolver.calculate_seeding()
 
+            # Track wins cutoffs
+            bracket_cutoff, playin_cutoff = self._compute_cutoffs(standings, final_seeding)
+            if bracket_cutoff is not None:
+                bracket_cutoffs.append(bracket_cutoff)
+            if playin_cutoff is not None:
+                playin_cutoffs.append(playin_cutoff)
+
             for seed, team_name in enumerate(final_seeding, 1):
                 results[team_name][f"seed_{seed}"] += 1
                 if seed <= 10:
@@ -569,4 +635,11 @@ class SeasonSimulator:
                 if seed <= 6:
                     results[team_name]["make_bracket"] += 1
 
-        return self._calculate_probabilities(dict(results), total)
+        probabilities = self._calculate_probabilities(dict(results), total)
+        median_bracket = int(statistics.median(bracket_cutoffs)) if bracket_cutoffs else None
+        median_playin = int(statistics.median(playin_cutoffs)) if playin_cutoffs else None
+        return {
+            "probabilities": probabilities,
+            "median_bracket_cutoff": median_bracket,
+            "median_playin_cutoff": median_playin,
+        }

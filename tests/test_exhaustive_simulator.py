@@ -60,7 +60,8 @@ class TestExhaustiveSimulator:
 
     def test_exhaustive_one_match_structure(self, simulator_one_remaining):
         """Exhaustive with 1 remaining match yields expected structure."""
-        results = simulator_one_remaining.run_exhaustive_simulations()
+        result = simulator_one_remaining.run_exhaustive_simulations()
+        results = result["probabilities"]
 
         assert len(results) == 4
         for team_name, probs in results.items():
@@ -72,7 +73,8 @@ class TestExhaustiveSimulator:
 
     def test_exhaustive_probabilities_sum_to_one(self, simulator_one_remaining):
         """Seed probabilities sum to 1.0 per team for 1 remaining match."""
-        results = simulator_one_remaining.run_exhaustive_simulations()
+        result = simulator_one_remaining.run_exhaustive_simulations()
+        results = result["probabilities"]
 
         for team_name, probs in results.items():
             total = sum(probs.get(f'seed_{i}', 0) for i in range(1, 5))
@@ -81,15 +83,17 @@ class TestExhaustiveSimulator:
     def test_exhaustive_total_scenarios(self, simulator_one_remaining, simulator_two_remaining):
         """Exhaustive produces correct total scenario count."""
         r1 = simulator_one_remaining.run_exhaustive_simulations()
+        probs1 = r1["probabilities"]
         # Each team's seed_* probs sum to 1, and we have 6 scenarios
         # So each prob is count/6
-        for team_name, probs in r1.items():
+        for team_name, probs in probs1.items():
             for key, val in probs.items():
                 if key.startswith('seed_'):
                     assert val * 6 == int(val * 6), f"Prob should be multiple of 1/6: {val}"
 
         r2 = simulator_two_remaining.run_exhaustive_simulations()
-        for team_name, probs in r2.items():
+        probs2 = r2["probabilities"]
+        for team_name, probs in probs2.items():
             for key, val in probs.items():
                 if key.startswith('seed_'):
                     assert val * 36 == int(round(val * 36)), f"Prob should be multiple of 1/36: {val}"

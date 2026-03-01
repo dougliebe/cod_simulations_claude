@@ -69,8 +69,9 @@ def main():
     # Run simulations
     print("Running 1000 simulations...")
     start = time.time()
-    results = simulator.run_simulations(num_iterations=1000)
+    sim_result = simulator.run_simulations(num_iterations=1000)
     elapsed = time.time() - start
+    results = sim_result["probabilities"]
     print(f"✓ Completed in {elapsed:.3f}s ({elapsed/1000*1000:.2f} ms/sim)\n")
 
     # Show top teams
