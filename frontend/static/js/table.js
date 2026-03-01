@@ -31,15 +31,29 @@ class ProbabilityTable {
     }
 
     /**
-     * Format probability as percentage
+     * Format probability as percentage (whole number, e.g. 54%)
+     * 0% → "<1%", 100% → "~100%"
      * @param {number} prob - Probability (0-1)
      * @returns {string} Formatted percentage
      */
     formatProbability(prob) {
         if (prob === undefined || prob === null) {
-            return '0.0';
+            return '<1%';
         }
-        return (prob * 100).toFixed(1);
+        const pct = Math.round(prob * 100);
+        if (pct === 0 && prob > 0) return '<1%';
+        if (pct === 100 && prob < 1) return '~100%';
+        return pct + '%';
+    }
+
+    /**
+     * Font size for probability by magnitude: 100% = 1.45rem, 0% = 1.2rem
+     * @param {number} prob - Probability (0-1)
+     * @returns {string} CSS font-size value
+     */
+    getProbabilityFontSize(prob) {
+        const p = prob === undefined || prob === null ? 0 : Math.max(0, Math.min(1, prob));
+        return `${1.2 + p * 0.25}rem`;
     }
 
     /**
@@ -261,6 +275,7 @@ class ProbabilityTable {
         const playInProb = probs.make_play_ins || 0;
         const playInCell = document.createElement('td');
         playInCell.textContent = this.formatProbability(playInProb);
+        playInCell.style.fontSize = this.getProbabilityFontSize(playInProb);
         playInCell.className = 'numeric-cell probability-cell';
         const playInNorm = this.normalizeForColumn(playInProb, scales.playInBracket.min, scales.playInBracket.max);
         const playInStyle = this.getCellStyle(playInNorm);
@@ -271,6 +286,7 @@ class ProbabilityTable {
         const bracketProb = probs.make_bracket || 0;
         const bracketCell = document.createElement('td');
         bracketCell.textContent = this.formatProbability(bracketProb);
+        bracketCell.style.fontSize = this.getProbabilityFontSize(bracketProb);
         bracketCell.className = 'numeric-cell probability-cell';
         const bracketNorm = this.normalizeForColumn(bracketProb, scales.playInBracket.min, scales.playInBracket.max);
         const bracketStyle = this.getCellStyle(bracketNorm);
@@ -282,6 +298,7 @@ class ProbabilityTable {
             const seedProb = probs[`seed_${seed}`] || 0;
             const seedCell = document.createElement('td');
             seedCell.textContent = this.formatProbability(seedProb);
+            seedCell.style.fontSize = this.getProbabilityFontSize(seedProb);
             seedCell.className = seed === 1 ? 'numeric-cell probability-cell seed-column-separator' : 'numeric-cell probability-cell';
             const s = scales[`seed_${seed}`];
             const seedNorm = this.normalizeForColumn(seedProb, s.min, s.max);
@@ -314,6 +331,7 @@ class ProbabilityTable {
             const playInCell = row.cells[4];
             const playInProb = probs.make_play_ins || 0;
             playInCell.textContent = this.formatProbability(playInProb);
+            playInCell.style.fontSize = this.getProbabilityFontSize(playInProb);
             const playInNorm = this.normalizeForColumn(playInProb, scales.playInBracket.min, scales.playInBracket.max);
             const playInStyle = this.getCellStyle(playInNorm);
             playInCell.style.backgroundColor = playInStyle.backgroundColor;
@@ -322,6 +340,7 @@ class ProbabilityTable {
             const bracketCell = row.cells[5];
             const bracketProb = probs.make_bracket || 0;
             bracketCell.textContent = this.formatProbability(bracketProb);
+            bracketCell.style.fontSize = this.getProbabilityFontSize(bracketProb);
             const bracketNorm = this.normalizeForColumn(bracketProb, scales.playInBracket.min, scales.playInBracket.max);
             const bracketStyle = this.getCellStyle(bracketNorm);
             bracketCell.style.backgroundColor = bracketStyle.backgroundColor;
@@ -331,6 +350,7 @@ class ProbabilityTable {
                 const seedProb = probs[`seed_${seed}`] || 0;
                 const seedCell = row.cells[6 + seed - 1];
                 seedCell.textContent = this.formatProbability(seedProb);
+                seedCell.style.fontSize = this.getProbabilityFontSize(seedProb);
                 const s = scales[`seed_${seed}`];
                 const seedNorm = this.normalizeForColumn(seedProb, s.min, s.max);
                 const seedStyle = this.getCellStyle(seedNorm);

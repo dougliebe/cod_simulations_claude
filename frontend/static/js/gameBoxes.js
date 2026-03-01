@@ -3,6 +3,20 @@
  * Handles rendering and interaction with upcoming match boxes
  */
 
+function formatProbability(prob) {
+    if (prob === undefined || prob === null) return '<1%';
+    const pct = Math.round(prob * 100);
+    if (pct === 0 && prob > 0) return '<1%';
+    if (pct === 100 && prob < 1) return '~100%';
+    return pct + '%';
+}
+
+/** Font size by magnitude: 100% = 1.45rem, 0% = 1.2rem */
+function getProbabilityFontSize(prob) {
+    const p = prob === undefined || prob === null ? 0 : Math.max(0, Math.min(1, prob));
+    return `${1.2 + p * 0.25}rem`;
+}
+
 class GameBoxes {
     constructor() {
         this.container = document.getElementById('games-container');
@@ -54,7 +68,8 @@ class GameBoxes {
         if (match.win_probability_team1 !== undefined) {
             const team1Prob = document.createElement('span');
             team1Prob.className = 'win-prob';
-            team1Prob.textContent = `(${(match.win_probability_team1 * 100).toFixed(0)}%)`;
+            team1Prob.textContent = `(${formatProbability(match.win_probability_team1)})`;
+            team1Prob.style.fontSize = getProbabilityFontSize(match.win_probability_team1);
             team1Info.appendChild(team1Prob);
         }
 
@@ -87,7 +102,8 @@ class GameBoxes {
         if (match.win_probability_team1 !== undefined) {
             const team2Prob = document.createElement('span');
             team2Prob.className = 'win-prob';
-            team2Prob.textContent = `(${((1 - match.win_probability_team1) * 100).toFixed(0)}%)`;
+            team2Prob.textContent = `(${formatProbability(1 - match.win_probability_team1)})`;
+            team2Prob.style.fontSize = getProbabilityFontSize(1 - match.win_probability_team1);
             team2Info.appendChild(team2Prob);
         }
 
