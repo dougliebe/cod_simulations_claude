@@ -230,21 +230,19 @@ class ProbabilityTable {
         rankCell.className = 'rank-cell numeric-cell';
         row.appendChild(rankCell);
 
-        // Team name with logo
+        // Team logo only (no name text)
         const nameCell = document.createElement('td');
         nameCell.className = 'team-name-cell';
+        nameCell.dataset.teamName = team.name;
         const logoPath = this.getLogoPath(team.name);
         if (logoPath) {
             const img = document.createElement('img');
             img.src = logoPath;
-            img.alt = '';
+            img.alt = team.name;
             img.className = 'team-logo';
+            img.title = team.name;
             nameCell.appendChild(img);
         }
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = team.name;
-        nameSpan.className = 'team-name-text';
-        nameCell.appendChild(nameSpan);
         row.appendChild(nameCell);
 
         // Match record
@@ -300,16 +298,16 @@ class ProbabilityTable {
      * @param {Object} newProbabilities - Updated probability data
      */
     updateTable(newProbabilities) {
-        const rows = this.tableBody.querySelectorAll('tr');
-        const teamNames = Array.from(rows).map(r => r.querySelector('.team-name-cell')?.textContent).filter(Boolean);
+        const rows = this.tableBody.querySelectorAll('tr:not(.cutoff-separator)');
+        const teamNames = Array.from(rows).map(r => r.querySelector('.team-name-cell')?.dataset.teamName).filter(Boolean);
 
         // Compute per-column min/max so highest in each column gets same color (green)
         const scales = this.computeColumnScales(newProbabilities, teamNames);
 
         rows.forEach((row) => {
-            const teamName = row.querySelector('.team-name-cell').textContent;
+            const teamName = row.querySelector('.team-name-cell')?.dataset.teamName;
+            if (!teamName) return;
             const probs = newProbabilities[teamName];
-
             if (!probs) return;
 
             // Update play-in probability (column 5) - shared scale with bracket

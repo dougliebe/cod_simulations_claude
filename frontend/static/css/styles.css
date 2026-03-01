@@ -102,7 +102,7 @@ section {
 }
 
 #probability-table th {
-    padding: 12px 8px;
+    padding: 18px 12px;
     text-align: center;
     font-weight: 600;
     color: #ffffff;
@@ -111,7 +111,7 @@ section {
 }
 
 #probability-table td {
-    padding: 10px 8px;
+    padding: 15px 12px;
     text-align: center;
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
@@ -153,9 +153,11 @@ section {
     padding-left: 10px;
 }
 
-/* Numeric cells - monospace font for numbers only */
+/* Numeric cells - monospace font, larger size using saved horizontal space */
 .numeric-cell {
     font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+    font-size: 1.35rem;
+    min-width: 3.5em;
 }
 
 /* Probability cells - white text with thick black outline (NWS-style) */
@@ -168,30 +170,30 @@ section {
 /* Rank Cell */
 .rank-cell {
     font-weight: 700;
-    font-size: 0.8rem;
+    font-size: 1.1rem;
 }
 
-/* Team Name Cell */
+/* Team Cell - logo only, narrow to save horizontal space for numbers */
 .team-name-cell {
-    text-align: left !important;
-    font-weight: 600;
-    padding-left: 15px !important;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    text-align: center !important;
+    padding: 4px !important;
+    width: 1%;
+    white-space: nowrap;
 }
 
 .team-name-cell .team-logo {
-    width: 28px;
-    height: 28px;
+    width: 44px;
+    height: 44px;
     object-fit: contain;
-    flex-shrink: 0;
+    display: block;
+    margin: 0 auto;
 }
 
-.team-name-cell .team-name-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+/* Team header column - narrow like team cells */
+#probability-table th.team-header {
+    width: 1%;
+    padding-left: 4px;
+    padding-right: 4px;
 }
 
 /* Bracket Classes */
